@@ -1,7 +1,7 @@
 import BottomNavigation from "@/components/BottomNavigation";
+import MainContent from "@/components/MainContent";
 import WeatherBackground from "@/components/WeatherBackground";
 import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
 
 export default function Index() {
   //for weather api
@@ -9,18 +9,8 @@ export default function Index() {
 
   return (
     <WeatherBackground weather={weather}>
-      <View style={styles.content}>
-        <Text>Your app content here</Text>
-      </View>
+      <MainContent />
       <BottomNavigation />
     </WeatherBackground>
   );
 }
-
-const styles = StyleSheet.create({
-  content: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

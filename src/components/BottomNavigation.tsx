@@ -26,7 +26,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   statsBtn: {
-    width: 80,
+    width: 100,
     height: 80,
     justifyContent: "center",
     alignItems: "center",
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   shopBtn: {
-    width: 80,
+    width: 100,
     height: 80,
     justifyContent: "center",
     alignItems: "center",
