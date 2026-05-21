@@ -1,10 +1,10 @@
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 export default function CharacterInfo() {
   return (
     <View style={styles.container}>
-      <Text style={styles.name}>Fluffy</Text>
-      <Text style={styles.status}>Status: Healthy</Text>
+      <Text style={styles.name}>Bella</Text>
+      <Text style={styles.status}>(STATUS)Ready for a walk!</Text>
       
       <View style={styles.levelContainer}>
         <View style={styles.levelHeader}>
