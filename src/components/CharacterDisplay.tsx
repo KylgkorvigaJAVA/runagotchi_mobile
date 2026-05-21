@@ -4,7 +4,7 @@ export default function CharacterDisplay() {
   return (
     <View style={styles.container}>
       <View style={styles.characterContainer}>
-        <Image source={require("@/assets/images/dog/dog_state_home.png")} style={styles.character} />
+        <Image source={require("@/assets/images/dog/gif/dog_state_home.gif")} style={styles.character} />
       </View>
 
       <View style={styles.statsContainer}>
