@@ -1,11 +1,12 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+import { AppText } from "./AppText";
 
 export default function Header() {
   return (
     <View style={styles.container}>
       <View style={styles.currencyContainer}>
         <Image source={require("@/assets/images/icons/coin_small.png")} style={styles.coinIcon} />
-        <Text style={styles.currency}>25</Text>
+        <AppText style={styles.currency}>25</AppText>
       </View>
       <TouchableOpacity style={styles.menuBtn}>
         <Image source={require("@/assets/images/btn/menu_btn.png")} style={styles.menuBtn} />
@@ -33,7 +34,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 20,
     fontSize: 25,
-    fontWeight: "bold",
     color: "#fff",
   },
   menuBtn: {

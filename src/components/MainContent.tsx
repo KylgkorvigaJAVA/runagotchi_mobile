@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
-import Header from "./Header";
-import CharacterInfo from "./CharacterInfo";
 import CharacterDisplay from "./CharacterDisplay";
+import CharacterInfo from "./CharacterInfo";
+import Header from "./Header";
 
 export default function MainContent() {
   return (

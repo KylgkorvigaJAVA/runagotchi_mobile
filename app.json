@@ -4,7 +4,6 @@
     "slug": "runagotchi_mobile",
     "version": "1.0.0",
     "orientation": "portrait",
-    // "icon": "./assets/images/icon.png",
     "scheme": "runagotchimobile",
     "ios": {
       "icon": "./assets/expo.icon"
@@ -12,15 +11,6 @@
     "android": {
       "enableEdgeToEdge": false
     },
-    // "android": {
-    //   "adaptiveIcon": {
-    //     "backgroundColor": "#E6F4FE",
-    //     "foregroundImage": "./assets/images/android-icon-foreground.png",
-    //     "backgroundImage": "./assets/images/android-icon-background.png",
-    //     "monochromeImage": "./assets/images/android-icon-monochrome.png"
-    //   },
-    //   "enableEdgeToEdge": false
-    // },
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png"
@@ -36,7 +26,8 @@
             "imageWidth": 76
           }
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,

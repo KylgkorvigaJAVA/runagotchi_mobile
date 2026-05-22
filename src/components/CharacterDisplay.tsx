@@ -1,4 +1,5 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, View } from "react-native";
+import { AppText } from "./AppText";
 
 export default function CharacterDisplay() {
   return (
@@ -9,12 +10,12 @@ export default function CharacterDisplay() {
 
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
-          <Text style={styles.energyIcon}>⚡</Text>
-          <Text style={styles.statValue}>75</Text>
+          <AppText style={styles.statIcon}>⚡</AppText>
+          <AppText style={styles.statValue}>75</AppText>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.healthIcon}>❤️</Text>
-          <Text style={styles.statValue}>90</Text>
+          <AppText style={styles.statIcon}>❤️</AppText>
+          <AppText style={styles.statValue}>90</AppText>
         </View>
       </View>
     </View>
@@ -23,6 +24,7 @@ export default function CharacterDisplay() {
 
 const styles = StyleSheet.create({
   container: {
+    top: 90,
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
@@ -47,15 +49,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
   },
-  energyIcon: {
+  statIcon: {
     fontSize: 32,
-  },
-  healthIcon: {
-    fontSize: 32,
+    textShadowColor: "rgba(0, 0, 0, 0.8)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
   statValue: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 32,
+    textShadowColor: "rgba(0, 0, 0, 0.8)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
     color: "#fff",
   },
 });
