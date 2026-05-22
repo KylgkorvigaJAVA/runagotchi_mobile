@@ -1,12 +1,30 @@
-import { Image, StyleSheet, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Image, Pressable, StyleSheet, View } from "react-native";
 import { AppText } from "./AppText";
 
 export default function CharacterDisplay() {
+  const [showDogMessage, setShowDogMessage] = useState(false);
+
+  useEffect(() => {
+    if (!showDogMessage) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setShowDogMessage(false);
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [showDogMessage]);
+
   return (
     <View style={styles.container}>
-      <View style={styles.characterContainer}>
+      <Pressable style={styles.characterContainer} onPress={() => setShowDogMessage(true)}>
         <Image source={require("@/assets/images/dog/gif/dog_state_home.gif")} style={styles.character} />
-      </View>
+        {showDogMessage && (
+          <Image source={require("@/assets/images/dog/woof.png")} style={styles.dogMessage} />
+        )}
+      </Pressable>
 
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
@@ -31,6 +49,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   characterContainer: {
+    position: "relative",
     alignItems: "center",
     marginBottom: 20,
   },
@@ -38,6 +57,16 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     resizeMode: "contain",
+  },
+  dogMessage: {
+    position: "absolute",
+    // start from the character's top-right outer corner
+    top: -70,
+    left: 160,
+    width: 120,
+    height: 120,
+    resizeMode: "contain",
+    pointerEvents: "none",
   },
   statsContainer: {
     flexDirection: "row",
