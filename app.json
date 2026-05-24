@@ -27,7 +27,13 @@
           }
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Runagotchi to track your walks and turn distance into pet progress."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
