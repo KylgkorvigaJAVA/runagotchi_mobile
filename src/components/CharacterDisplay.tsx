@@ -1,8 +1,26 @@
 import { useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
+import { PetAppearanceState } from "@/features/activity/types";
 import { AppText } from "./AppText";
 
-export default function CharacterDisplay() {
+interface CharacterDisplayProps {
+  happiness: number;
+  strength: number;
+  appearance: PetAppearanceState;
+}
+
+const dogAppearanceImages = {
+  home: require("@/assets/images/dog/gif/dog_state_home.gif"),
+  ready: require("@/assets/images/dog/gif/dog_activity_ready.gif"),
+  pause: require("@/assets/images/dog/gif/dog_activity_pause.gif"),
+  done: require("@/assets/images/dog/gif/dog_activity_done.gif"),
+} as const;
+
+export default function CharacterDisplay({
+  happiness,
+  strength,
+  appearance,
+}: CharacterDisplayProps) {
   const [showDogMessage, setShowDogMessage] = useState(false);
 
   useEffect(() => {
@@ -20,7 +38,7 @@ export default function CharacterDisplay() {
   return (
     <View style={styles.container}>
       <Pressable style={styles.characterContainer} onPress={() => setShowDogMessage(true)}>
-        <Image source={require("@/assets/images/dog/gif/dog_state_home.gif")} style={styles.character} />
+        <Image source={dogAppearanceImages[appearance]} style={styles.character} />
         {showDogMessage && (
           <Image source={require("@/assets/images/dog/woof.png")} style={styles.dogMessage} />
         )}
@@ -29,11 +47,11 @@ export default function CharacterDisplay() {
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <AppText style={styles.statIcon}>⚡</AppText>
-          <AppText style={styles.statValue}>75</AppText>
+          <AppText style={styles.statValue}>{happiness}</AppText>
         </View>
         <View style={styles.statItem}>
           <AppText style={styles.statIcon}>❤️</AppText>
-          <AppText style={styles.statValue}>90</AppText>
+          <AppText style={styles.statValue}>{strength}</AppText>
         </View>
       </View>
     </View>

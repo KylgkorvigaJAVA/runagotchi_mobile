@@ -1,14 +1,26 @@
-import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Alert, Image, StyleSheet, TouchableOpacity, View } from "react-native";
 import { AppText } from "./AppText";
 
-export default function Header() {
+interface HeaderProps {
+  currency: number;
+  onMenuPress: () => void;
+}
+
+export default function Header({ currency, onMenuPress }: HeaderProps) {
+  const handleMenuPress = () => {
+    Alert.alert("Character", "Start a new character? Your local progress will be replaced.", [
+      { text: "Cancel", style: "cancel" },
+      { text: "New character", style: "destructive", onPress: onMenuPress },
+    ]);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.currencyContainer}>
         <Image source={require("@/assets/images/icons/coin_small.png")} style={styles.coinIcon} />
-        <AppText style={styles.currency}>25</AppText>
+        <AppText style={styles.currency}>{currency}</AppText>
       </View>
-      <TouchableOpacity style={styles.menuBtn}>
+      <TouchableOpacity style={styles.menuBtn} onPress={handleMenuPress}>
         <Image source={require("@/assets/images/btn/menu_btn.png")} style={styles.menuBtn} />
       </TouchableOpacity>
     </View>
