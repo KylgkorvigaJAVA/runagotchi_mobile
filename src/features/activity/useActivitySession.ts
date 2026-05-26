@@ -41,6 +41,7 @@ function calculateDistanceMeters(
 
 export function useActivitySession() {
   const [session, setSession] = useState<ActivitySessionSnapshot>(idleSession);
+  const sessionRef = useRef<ActivitySessionSnapshot>(idleSession);
   const watchSubscriptionRef = useRef<Location.LocationSubscription | null>(null);
   const activeTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const previousCoordsRef = useRef<Location.LocationObjectCoords | null>(null);
@@ -54,6 +55,10 @@ export function useActivitySession() {
       activeTimerRef.current = null;
     }
   }, []);
+
+  useEffect(() => {
+    sessionRef.current = session;
+  }, [session]);
 
   useEffect(() => {
     return () => {
@@ -74,17 +79,43 @@ export function useActivitySession() {
     }));
   }, [stopTrackingResources]);
 
+  const pauseSession = useCallback(() => {
+    stopTrackingResources();
+    previousCoordsRef.current = null;
+
+    setSession((currentSession) => {
+    if (currentSession.status !== "tracking") {
+      return currentSession;
+    }
+
+    return {
+      ...currentSession,
+      status: "paused",
+    };
+    });
+  }, [stopTrackingResources]);
+
   const startSession = useCallback(async () => {
     stopTrackingResources();
+    const currentSession = sessionRef.current;
+    const baseSession =
+    currentSession.status === "paused"
+      ? {
+          ...currentSession,
+          errorMessage: null,
+        }
+      : {
+          ...idleSession,
+        };
 
     const servicesEnabled = await Location.hasServicesEnabledAsync();
 
     if (!servicesEnabled) {
-      setSession({
-        ...idleSession,
-        status: "permission-denied",
-        errorMessage: "Enable location services to start an activity.",
-      });
+    setSession({
+      ...baseSession,
+      status: "permission-denied",
+      errorMessage: "Enable location services to start an activity.",
+    });
       return;
     }
 
@@ -92,7 +123,7 @@ export function useActivitySession() {
 
     if (permission.status !== "granted") {
       setSession({
-        ...idleSession,
+        ...baseSession,
         status: "permission-denied",
         errorMessage: "Location permission was denied.",
       });
@@ -105,7 +136,7 @@ export function useActivitySession() {
 
     previousCoordsRef.current = initialLocation.coords;
     setSession({
-      ...idleSession,
+      ...baseSession,
       status: "tracking",
     });
 
@@ -176,6 +207,7 @@ export function useActivitySession() {
   return {
     session,
     startSession,
+    pauseSession,
     stopSession,
     clearCompletedSession,
     resetSession,

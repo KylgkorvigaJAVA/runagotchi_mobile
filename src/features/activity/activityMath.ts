@@ -47,19 +47,19 @@ export function mergeActivityTotals(
 }
 
 function getAppearanceState(
-  weeklySteps: number,
+  _weeklySteps: number,
   session: ActivitySessionSnapshot
 ): PetAppearanceState {
   if (session.status === "tracking") {
     return "ready";
   }
 
-  if (session.status === "completed" && session.steps > 0) {
-    return "done";
+  if (session.status === "paused") {
+    return "pause";
   }
 
-  if (weeklySteps < 2500) {
-    return "pause";
+  if (session.status === "completed" && session.steps > 0) {
+    return "done";
   }
 
   return "home";
@@ -75,7 +75,7 @@ export function derivePetProgression(
   const activeMinutes = (totals.totalActiveSeconds + session.activeSeconds) / 60;
   const weeklyActiveMinutes = (totals.weeklyActiveSeconds + session.activeSeconds) / 60;
   const lowActivityPenalty = weeklySteps < 1500 ? 18 : weeklySteps < 4000 ? 8 : 0;
-  const currentActivityBoost = session.status === "tracking" ? 10 : 0;
+  const currentActivityBoost = session.status === "tracking" ? 10 : session.status === "paused" ? 4 : 0;
 
   const happiness = clamp(
     52 + Math.round(weeklySteps / 180) - lowActivityPenalty + currentActivityBoost,
@@ -96,6 +96,8 @@ export function derivePetProgression(
 
   if (session.status === "tracking") {
     status = `${session.steps} steps so far - ${formatDistance(session.distanceMeters)} tracked.`;
+  } else if (session.status === "paused") {
+    status = `Activity paused at ${session.steps} steps - tap Go to continue.`;
   } else if (session.status === "completed" && session.steps > 0) {
     status = `Great walk! ${session.steps} steps made the pet stronger.`;
   } else if (session.status === "permission-denied") {

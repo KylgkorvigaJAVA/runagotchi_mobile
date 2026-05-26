@@ -1,4 +1,9 @@
-export type ActivitySessionStatus = "idle" | "tracking" | "completed" | "permission-denied";
+export type ActivitySessionStatus =
+  | "idle"
+  | "tracking"
+  | "paused"
+  | "completed"
+  | "permission-denied";
 
 export type PetAppearanceState = "home" | "ready" | "pause" | "done";
 

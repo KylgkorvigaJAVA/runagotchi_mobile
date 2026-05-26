@@ -1,5 +1,11 @@
 import { buildStatsMetrics, derivePetProgression, formatDistance, formatDuration, mergeActivityTotals } from "@/features/activity/activityMath";
-import { ActivityMetric, ActivitySessionSnapshot, ActivityTotals, PetAppearanceState } from "@/features/activity/types";
+import {
+  ActivityMetric,
+  ActivitySessionSnapshot,
+  ActivitySessionStatus,
+  ActivityTotals,
+  PetAppearanceState,
+} from "@/features/activity/types";
 import { useActivitySession } from "@/features/activity/useActivitySession";
 import { homeScreenRepository } from "@/features/home/homeScreenRepository";
 import { createInitialHomeScreenData } from "@/features/home/mockHomeScreenData";
@@ -8,8 +14,10 @@ import { createContext, PropsWithChildren, useContext, useEffect, useRef, useSta
 import { clearStoredGameState, loadStoredGameState, saveStoredGameState } from "./storage";
 
 interface GameContextValue {
+  activityStatus: ActivitySessionStatus;
   homeData: HomeScreenData | null;
   errorMessage: string | null;
+  isActivityControlsOpen: boolean;
   isLoading: boolean;
   isTracking: boolean;
   weather: HomeScreenData["weather"];
@@ -23,8 +31,12 @@ interface GameContextValue {
   sessionActiveTime: string;
   sessionSteps: number;
   statsMetrics: ActivityMetric[];
+  closeActivityControls: () => void;
+  openActivityControls: () => void;
+  pauseActivityTracking: () => void;
   resetGame: () => Promise<void>;
-  toggleActivityTracking: () => Promise<void>;
+  startActivityTracking: () => Promise<void>;
+  stopActivityTracking: () => void;
 }
 
 const emptySession: ActivitySessionSnapshot = {
@@ -36,8 +48,10 @@ const emptySession: ActivitySessionSnapshot = {
 };
 
 const defaultGameContext: GameContextValue = {
+  activityStatus: "idle",
   homeData: null,
   errorMessage: null,
+  isActivityControlsOpen: false,
   isLoading: true,
   isTracking: false,
   weather: "sunny",
@@ -51,18 +65,38 @@ const defaultGameContext: GameContextValue = {
   sessionActiveTime: formatDuration(0),
   sessionSteps: 0,
   statsMetrics: [],
+  closeActivityControls: () => undefined,
+  openActivityControls: () => undefined,
+  pauseActivityTracking: () => undefined,
   resetGame: async () => undefined,
-  toggleActivityTracking: async () => undefined,
+  startActivityTracking: async () => undefined,
+  stopActivityTracking: () => undefined,
 };
 
 const GameContext = createContext<GameContextValue>(defaultGameContext);
 
+function normalizeHomeData(data: HomeScreenData): HomeScreenData {
+  if (data.pet.level >= 5) {
+    return data;
+  }
+
+  return {
+    ...data,
+    pet: {
+      ...data.pet,
+      level: 5,
+    },
+  };
+}
+
 export function GameProvider({ children }: PropsWithChildren) {
   const [homeData, setHomeData] = useState<HomeScreenData | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isActivityControlsOpen, setIsActivityControlsOpen] = useState(false);
   const [activityTotals, setActivityTotals] = useState<ActivityTotals | null>(null);
   const [lastCompletedSession, setLastCompletedSession] = useState<ActivitySessionSnapshot | null>(null);
-  const { session, startSession, stopSession, clearCompletedSession, resetSession } = useActivitySession();
+  const { session, startSession, pauseSession, stopSession, clearCompletedSession, resetSession } =
+    useActivitySession();
   const lastCommittedSessionRef = useRef<string | null>(null);
 
   useEffect(() => {
@@ -71,7 +105,9 @@ export function GameProvider({ children }: PropsWithChildren) {
     const loadHomeData = async () => {
       try {
         const storedState = await loadStoredGameState();
-        const data = storedState?.homeData ?? (await homeScreenRepository.getHomeScreenData());
+        const data = normalizeHomeData(
+          storedState?.homeData ?? (await homeScreenRepository.getHomeScreenData())
+        );
         const totals = storedState?.activityTotals ?? data.activityOverview;
 
         if (isMounted) {
@@ -146,22 +182,50 @@ export function GameProvider({ children }: PropsWithChildren) {
     session.status === "tracking" ? session : lastCompletedSession ?? liveSession;
   const petProgression = derivePetProgression(homeData?.pet.level ?? 0, totals, liveSession);
   const statsMetrics = buildStatsMetrics(totals, liveSession);
+  const hasCompletedSession = session.status === "completed" || Boolean(lastCompletedSession);
   const petAppearance =
-    session.status === "tracking" ? "ready" : lastCompletedSession ? "done" : petProgression.appearance;
+    session.status === "tracking"
+      ? "ready"
+      : session.status === "paused"
+        ? "pause"
+        : hasCompletedSession
+            ? "done"
+            : isActivityControlsOpen
+              ? "ready"
+              : petProgression.appearance;
 
-  const toggleActivityTracking = async () => {
-    if (session.status === "tracking") {
-      stopSession();
+  const openActivityControls = () => {
+    setIsActivityControlsOpen(true);
+    setLastCompletedSession(null);
+    clearCompletedSession();
+  };
+
+  const closeActivityControls = () => {
+    if (session.status === "tracking" || session.status === "paused") {
       return;
     }
 
+    setIsActivityControlsOpen(false);
+  };
+
+  const startActivityTracking = async () => {
+    setIsActivityControlsOpen(true);
     setLastCompletedSession(null);
     clearCompletedSession();
     await startSession();
   };
 
+  const pauseActivityTracking = () => {
+    pauseSession();
+  };
+
+  const stopActivityTracking = () => {
+    stopSession();
+  };
+
   const resetGame = async () => {
     resetSession();
+    setIsActivityControlsOpen(false);
     lastCommittedSessionRef.current = null;
     setLastCompletedSession(null);
 
@@ -178,13 +242,18 @@ export function GameProvider({ children }: PropsWithChildren) {
   };
 
   const value: GameContextValue = {
+    activityStatus: session.status,
     homeData,
     errorMessage,
+    isActivityControlsOpen,
     isLoading: !homeData && !errorMessage,
     isTracking: session.status === "tracking",
     weather: homeData?.weather ?? "sunny",
     petStatus:
       session.errorMessage ??
+      (isActivityControlsOpen && session.status === "idle"
+        ? "Ready to start an activity."
+        : undefined) ??
       (lastCompletedSession
         ? `Great walk! ${lastCompletedSession.steps} steps made the pet stronger.`
         : petProgression.status),
@@ -197,8 +266,12 @@ export function GameProvider({ children }: PropsWithChildren) {
     sessionActiveTime: formatDuration(displaySession.activeSeconds),
     sessionSteps: displaySession.steps,
     statsMetrics,
+    closeActivityControls,
+    openActivityControls,
+    pauseActivityTracking,
     resetGame,
-    toggleActivityTracking,
+    startActivityTracking,
+    stopActivityTracking,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
