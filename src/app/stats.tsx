@@ -11,14 +11,30 @@ const DISMISS_DISTANCE = 120;
 
 export default function StatsScreen() {
   const {
+    activityStatus,
     errorMessage,
     homeData,
+    isActivityControlsOpen,
     isLoading,
     isTracking,
+    pauseActivityTracking,
     statsMetrics,
-    toggleActivityTracking,
+    closeActivityControls,
+    openActivityControls,
+    startActivityTracking,
+    stopActivityTracking,
     weather,
   } = useGame();
+  const activityState =
+    activityStatus === "tracking"
+      ? "tracking"
+      : activityStatus === "paused"
+        ? "paused"
+        : activityStatus === "completed" && isActivityControlsOpen
+          ? "completed"
+          : isActivityControlsOpen
+            ? "ready"
+            : "default";
   const panPosition = useRef(new Animated.ValueXY()).current;
   const panelOpacity = panPosition.y.interpolate({
     inputRange: [0, DISMISS_DISTANCE * 1.5],
@@ -93,11 +109,18 @@ export default function StatsScreen() {
         <StatsPanel metrics={statsMetrics} />
       </Animated.View>
       <BottomNavigation
-        onStatsPress={() => router.replace("/")}
-        onStartPress={() => {
-          void toggleActivityTracking();
+        activityState={activityState}
+        isBackDisabled={activityState === "tracking" || activityState === "paused"}
+        onBackPress={closeActivityControls}
+        onGoPress={() => {
+          void startActivityTracking();
         }}
-        isTracking={isTracking}
+        onPausePress={pauseActivityTracking}
+        onStatsPress={() => router.replace("/")}
+        onActivityPress={() => {
+          openActivityControls();
+        }}
+        onStopPress={stopActivityTracking}
       />
     </WeatherBackground>
   );

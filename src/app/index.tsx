@@ -8,10 +8,13 @@ import { StyleSheet, View } from "react-native";
 
 export default function Index() {
   const {
+    activityStatus,
     homeData,
     errorMessage,
+    isActivityControlsOpen,
     isLoading,
     isTracking,
+    pauseActivityTracking,
     weather,
     petStatus,
     petLevel,
@@ -19,9 +22,23 @@ export default function Index() {
     petHappiness,
     petStrength,
     petAppearance,
+    closeActivityControls,
+    openActivityControls,
     resetGame,
-    toggleActivityTracking,
+    startActivityTracking,
+    stopActivityTracking,
   } = useGame();
+
+  const activityState =
+    activityStatus === "tracking"
+      ? "tracking"
+      : activityStatus === "paused"
+        ? "paused"
+        : activityStatus === "completed" && isActivityControlsOpen
+          ? "completed"
+          : isActivityControlsOpen
+            ? "ready"
+            : "default";
 
   if (isLoading || !homeData) {
     return (
@@ -50,11 +67,18 @@ export default function Index() {
         petAppearance={petAppearance}
       />
       <BottomNavigation
-        onStatsPress={() => router.push("/stats")}
-        onStartPress={() => {
-          void toggleActivityTracking();
+        activityState={activityState}
+        isBackDisabled={activityState === "tracking" || activityState === "paused"}
+        onBackPress={closeActivityControls}
+        onGoPress={() => {
+          void startActivityTracking();
         }}
-        isTracking={isTracking}
+        onPausePress={pauseActivityTracking}
+        onStatsPress={() => router.push("/stats")}
+        onActivityPress={() => {
+          openActivityControls();
+        }}
+        onStopPress={stopActivityTracking}
       />
     </WeatherBackground>
   );

@@ -38,6 +38,7 @@ export default function MainContent({
       <CharacterDisplay
         happiness={petHappiness}
         strength={petStrength}
+        level={petLevel}
         appearance={petAppearance}
       />
     </View>
