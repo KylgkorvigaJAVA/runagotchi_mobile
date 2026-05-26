@@ -1,30 +1,18 @@
 import { StyleSheet, View } from "react-native";
 import { AppText } from "./AppText";
 
-interface CharacterInfoProps {
-  name: string;
-  status: string;
-  level: number;
-  levelProgress: number;
-}
-
-export default function CharacterInfo({
-  name,
-  status,
-  level,
-  levelProgress,
-}: CharacterInfoProps) {
+export default function CharacterInfo() {
   return (
     <View style={styles.container}>
-      <AppText style={styles.name}>{name}</AppText>
-      <AppText style={styles.status}>{status}</AppText>
+      <AppText style={styles.name}>Bella</AppText>
+      <AppText style={styles.status}>Ready for a walk!</AppText>
       
       <View style={styles.levelContainer}>
         <View style={styles.levelHeader}>
-          <AppText style={styles.levelLabel}>Level {level}</AppText>
+          <AppText style={styles.levelLabel}>Level 5</AppText>
         </View>
         <View style={styles.levelBar}>
-          <View style={[styles.levelProgress, { width: `${Math.max(0, Math.min(levelProgress, 100))}%` }]} />
+          <View style={[styles.levelProgress, { width: "65%" }]} />
         </View>
       </View>
     </View>
