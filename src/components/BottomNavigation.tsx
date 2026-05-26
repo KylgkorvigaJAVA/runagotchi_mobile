@@ -1,15 +1,20 @@
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 
-export default function BottomNavigation() {
+type BottomNavigationProps = {
+  onPressStats?: () => void;
+  onPressShop?: () => void;
+};
+
+export default function BottomNavigation({ onPressStats, onPressShop }: BottomNavigationProps) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.statsBtn}>
+      <TouchableOpacity style={styles.statsBtn} onPress={onPressStats}>
         <Image source={require("@/assets/images/btn/stats_btn.png")} style={{ width: 80, height: 80 }} />
       </TouchableOpacity>
       <TouchableOpacity style={styles.startActivityBtn}>
         <Image source={require("@/assets/images/btn/start_activity_btn.png")} style={{ width: 120, height: 120 }} />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.shopBtn}>
+      <TouchableOpacity style={styles.shopBtn} onPress={onPressShop}>
         <Image source={require("@/assets/images/btn/shop_btn.png")} style={{ width: 80, height: 80 }} />
       </TouchableOpacity>
     </View>
