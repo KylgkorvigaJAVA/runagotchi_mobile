@@ -1,7 +1,6 @@
 import { PropsWithChildren } from "react";
 import { ImageBackground, ImageSourcePropType, StyleSheet } from "react-native";
-
-type WeatherType = "sunny" | "rainy";
+import { WeatherType } from "@/features/home/types";
 
 interface WeatherBackgroundProps extends PropsWithChildren {
   weather?: WeatherType;

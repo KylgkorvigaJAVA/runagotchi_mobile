@@ -1,3 +1,4 @@
+import { GameProvider } from "@/features/gameplay/GameProvider";
 import { useFonts } from "expo-font";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
@@ -27,6 +28,9 @@ export default function RootLayout() {
     return null;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <GameProvider>
+      <Stack screenOptions={{ headerShown: false }} />
+    </GameProvider>
+  );
 }
-
