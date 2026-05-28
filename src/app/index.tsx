@@ -76,27 +76,41 @@ export default function Index() {
   ).current;
 
   return (
-    <View style={{ flex: 1 }}>
+    <View testID="home-screen" style={{ flex: 1 }}>
       <WeatherBackground weather={weather} />
       
       <MainContent />
       <BottomNavigation onPressStats={openStats} onPressShop={openShop} />
 
-      {(isStatsOpen || isShopOpen) && <Pressable style={styles.backdrop} onPress={() => (isStatsOpen ? closeStats() : closeShop())} />}
+      {(isStatsOpen || isShopOpen) && (
+        <Pressable
+          testID="overlay-backdrop"
+          style={styles.backdrop}
+          onPress={() => (isStatsOpen ? closeStats() : closeShop())}
+        />
+      )}
 
       {isStatsOpen && (
-        <Animated.View style={[styles.leftPanel, { transform: [{ translateX: statsX }] }]} {...statsPan.panHandlers}>
+        <Animated.View
+          testID="stats-panel"
+          style={[styles.leftPanel, { transform: [{ translateX: statsX }] }]}
+          {...statsPan.panHandlers}
+        >
           <View style={[styles.swipeEdge, styles.swipeEdgeRight]} />
-          <Pressable style={styles.closeButton} onPress={closeStats}>
+          <Pressable testID="close-stats-button" style={styles.closeButton} onPress={closeStats}>
             <Image source={require("@/assets/images/btn/close_btn.png")} style={styles.closeImage} />
           </Pressable>
         </Animated.View>
       )}
 
       {isShopOpen && (
-        <Animated.View style={[styles.rightPanel, { transform: [{ translateX: shopX }] }]} {...shopPan.panHandlers}>
+        <Animated.View
+          testID="shop-panel"
+          style={[styles.rightPanel, { transform: [{ translateX: shopX }] }]}
+          {...shopPan.panHandlers}
+        >
           <View style={[styles.swipeEdge, styles.swipeEdgeLeft]} />
-          <Pressable style={[styles.closeButton, styles.closeButtonLeft]} onPress={closeShop}>
+          <Pressable testID="close-shop-button" style={[styles.closeButton, styles.closeButtonLeft]} onPress={closeShop}>
             <Image source={require("@/assets/images/btn/close_btn.png")} style={styles.closeImage} />
           </Pressable>
         </Animated.View>
