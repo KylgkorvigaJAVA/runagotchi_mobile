@@ -76,7 +76,9 @@ export default function Index() {
   ).current;
 
   return (
-    <WeatherBackground weather={weather}>
+    <View style={{ flex: 1 }}>
+      <WeatherBackground weather={weather} />
+      
       <MainContent />
       <BottomNavigation onPressStats={openStats} onPressShop={openShop} />
 
@@ -99,7 +101,7 @@ export default function Index() {
           </Pressable>
         </Animated.View>
       )}
-    </WeatherBackground>
+    </View>
   );
 }
 
