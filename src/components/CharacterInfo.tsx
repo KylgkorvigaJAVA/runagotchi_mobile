@@ -1,10 +1,14 @@
 import { StyleSheet, View } from "react-native";
 import { AppText } from "./AppText";
 
+import { useGame } from "./GameContext";
+
 export default function CharacterInfo() {
+  const { petName } = useGame();
+
   return (
     <View style={styles.container}>
-      <AppText style={styles.name}>Bella</AppText>
+      <AppText style={styles.name}>{ petName }</AppText>
       <AppText style={styles.status}>Ready for a walk!</AppText>
     </View>
   );
