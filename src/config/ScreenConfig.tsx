@@ -13,7 +13,7 @@ export const screenConfig = {
 
   running: {
     text: "active",
-    petImage: require("@/assets/images/dog/gif/dog_state_home.gif"),
+    petImage: require("@/assets/images/dog/gif/dog_activity_running.gif"),
     buttons: ["pause", "finish"],
   },
 

@@ -16,11 +16,15 @@ export default function ActiveInfo() {
 
 const styles = StyleSheet.create({
   container: {
-    top: 100,
+    position: "absolute",
+    top: 180,
+    left: 0,
+    right: 0,
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 20,
     gap: 12,
+    zIndex: 10,
   },
   activity: {
     fontSize: 45,

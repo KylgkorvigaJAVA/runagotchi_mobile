@@ -16,11 +16,15 @@ export default function FinishedInfo() {
 
 const styles = StyleSheet.create({
   container: {
-    top: 100,
+    position: "absolute",
+    top: 110,
+    left: 0,
+    right: 0,
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 20,
     gap: 12,
+    zIndex: 10,
   },
   mapPlaceholder: {
     width: 348,

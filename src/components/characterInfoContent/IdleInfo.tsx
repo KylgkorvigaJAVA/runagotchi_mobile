@@ -16,11 +16,15 @@ export default function IdleInfo() {
 
 const styles = StyleSheet.create({
   container: {
-    top: 100,
+    position: "absolute",
+    top: 220,
+    left: 0,
+    right: 0,
     alignItems: "center",
     paddingHorizontal: 16,
     paddingVertical: 20,
     gap: 12,
+    zIndex: 10,
   },
   name: {
     fontSize: 45,

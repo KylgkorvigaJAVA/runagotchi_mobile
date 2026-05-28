@@ -48,7 +48,7 @@ export default function CharacterDisplay() {
 
 const styles = StyleSheet.create({
   container: {
-    top: 130,
+    top: 180,
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
