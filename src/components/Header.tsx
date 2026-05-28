@@ -1,12 +1,16 @@
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
+
 import { AppText } from "./AppText";
+import { useGame } from "./GameContext";
 
 export default function Header() {
+  const { money } = useGame();
+
   return (
     <View style={styles.container}>
       <View style={styles.currencyContainer}>
         <Image source={require("@/assets/images/icons/coin_small.png")} style={styles.coinIcon} />
-        <AppText style={styles.currency}>25</AppText>
+        <AppText style={styles.currency}>{money}</AppText>
       </View>
       <TouchableOpacity style={styles.menuBtn}>
         <Image source={require("@/assets/images/btn/menu_btn.png")} style={styles.menuBtn} />

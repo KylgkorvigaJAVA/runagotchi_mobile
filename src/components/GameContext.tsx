@@ -1,9 +1,16 @@
 import {
-    createContext,
-    PropsWithChildren,
-    useContext,
-    useState,
+  createContext,
+  PropsWithChildren,
+  useContext,
+  useState,
 } from "react";
+
+type ScreenState =
+  | "home"
+  | "ready"
+  | "running"
+  | "paused"
+  | "finished";
 
 type GameContextType = {
   health: number;
@@ -15,8 +22,8 @@ type GameContextType = {
   energy: number;
   setEnergy: (v: number) => void;
 
-  screenState: string;
-  setScreenState: (v: string) => void;
+  screenState: ScreenState ;
+  setScreenState: (v: ScreenState ) => void;
 
   petName: string;
   setPetName: (v: string) => void;
@@ -31,7 +38,7 @@ export function GameProvider({
   const [health, setHealth] = useState(50);
   const [money, setMoney] = useState(0);
   const [energy, setEnergy] = useState(80);
-  const [screenState, setScreenState] = useState("home");
+  const [screenState, setScreenState] = useState<ScreenState>("home");
   const [petName, setPetName] = useState("Bella");
 
   return (
