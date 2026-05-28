@@ -1,15 +1,32 @@
 import { StyleSheet, View } from "react-native";
 
 import { AppText } from "../AppText";
+import { useGame } from "../GameContext";
 
 export default function ActiveInfo() {
+  const { screenState } = useGame();
 
   return (
     <View style={styles.container}>
-      <AppText style={styles.info}>Distance: 67km</AppText>
-      <AppText style={styles.info}>Avg speed: 67km/h</AppText>
-      <AppText style={styles.info}>Time: 1h 2min</AppText>
-      <AppText style={styles.activity}>WALKING</AppText>
+      
+      <AppText style={styles.info}>
+        Distance: 67km
+      </AppText>
+
+      <AppText style={styles.info}>
+        Avg speed: 67km/h
+      </AppText>
+
+      <AppText style={styles.info}>
+        Time: 1h 2min
+      </AppText>
+
+      <AppText style={styles.activity}>
+        {screenState === "paused"
+          ? "PAUSED"
+          : "WALKING"}
+      </AppText>
+
     </View>
   );
 }

@@ -2,13 +2,13 @@ export const screenConfig = {
   home: {
     text: "idle",
     petImage: require("@/assets/images/dog/gif/dog_state_home.gif"),
-    buttons: ["stats", "start_activity", "shop"],
+    buttons: ["stats", "startActivity", "shop"],
   },
 
   ready: {
     text: "idle",
     petImage: require("@/assets/images/dog/gif/dog_activity_ready.gif"),
-    buttons: ["back_home", "start"],
+    buttons: ["back", "start"],
   },
 
   running: {
@@ -26,6 +26,6 @@ export const screenConfig = {
   finished: {
     text: "finished",
     petImage: require("@/assets/images/dog/gif/dog_activity_done.gif"),
-    buttons: ["back_home"],
+    buttons: ["back"],
   },
 } as const;
