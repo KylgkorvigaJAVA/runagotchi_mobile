@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 import { AppText } from "../AppText";
 
-import { useGame } from "../GameContext";
+import { useGame } from "../../providers/GameContext";
 
 export default function IdleInfo() {
   const { petName } = useGame();

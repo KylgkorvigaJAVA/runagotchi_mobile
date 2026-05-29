@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 
 import { screenConfig } from "@/config/ScreenConfig";
+import { useGame } from "../providers/GameContext";
 import { AppText } from "./AppText";
-import { useGame } from "./GameContext";
 
 export default function CharacterDisplay() {
   const [showDogMessage, setShowDogMessage] = useState(false);

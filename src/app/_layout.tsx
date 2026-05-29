@@ -4,7 +4,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 
-import { GameProvider } from "@/components/GameContext";
+import { GameProvider } from "@/providers/GameContext";
 
 void SplashScreen.preventAutoHideAsync();
 

@@ -1,7 +1,7 @@
 import { StyleSheet, View } from "react-native";
 
+import { useGame } from "../../providers/GameContext";
 import { AppText } from "../AppText";
-import { useGame } from "../GameContext";
 
 export default function ActiveInfo() {
   const { screenState } = useGame();

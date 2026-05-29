@@ -1,7 +1,7 @@
 import { Image, ImageSourcePropType, StyleSheet, TouchableOpacity, View } from "react-native";
 
 import { screenConfig } from "@/config/ScreenConfig";
-import { useGame } from "./GameContext";
+import { useGame } from "../providers/GameContext";
 
 type BottomNavigationProps = {
   onPressStats?: () => void;
