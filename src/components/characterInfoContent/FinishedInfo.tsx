@@ -1,15 +1,33 @@
 import { StyleSheet, View } from "react-native";
 
+import { useActivity } from "../../providers/ActivityContext";
 import { AppText } from "../AppText";
 
 export default function FinishedInfo() {
+  const { latestFinishedActivity } = useActivity();
+  const elapsedTime = latestFinishedActivity?.elapsedTime ?? 0;
+
+  const hours = Math.floor(elapsedTime / 3600);
+  const minutes = Math.floor((elapsedTime % 3600) / 60);
+  const seconds = elapsedTime % 60;
 
   return (
     <View style={styles.container}>
+      
       <View style={styles.mapPlaceholder} />
-      <AppText style={styles.info}>Distance: 67km</AppText>
-      <AppText style={styles.info}>Avg speed: 67km/h</AppText>
-      <AppText style={styles.info}>Time: 1h 2min</AppText>
+
+      <AppText style={styles.info}>
+        Distance: 67km
+      </AppText>
+
+      <AppText style={styles.info}>
+        Avg speed: 67km/h
+      </AppText>
+
+      <AppText style={styles.info}>
+        Time: {hours}h {minutes}m {seconds}s
+      </AppText>
+
     </View>
   );
 }
