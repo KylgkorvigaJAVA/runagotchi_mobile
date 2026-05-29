@@ -2,7 +2,7 @@ import { useFonts } from "expo-font";
 import * as NavigationBar from "expo-navigation-bar";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { ActivityProvider } from "@/providers/ActivityContext";
 import { GameProvider } from "@/providers/GameContext";
@@ -30,10 +30,32 @@ export default function RootLayout() {
     return null;
   }
 
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  useEffect(() => {
+   const getName = async () => {
+     const name = localStorage.getItem("name");
+      if (name) {
+        setShowWelcome(false);
+      }
+    };
+
+    void getName();
+  }, []);
+
   return (
     <GameProvider>
       <ActivityProvider>
-        <Stack screenOptions={{ headerShown: false }} />
+        <Stack>
+          {showWelcome ? (
+            <Stack.Screen
+              name="welcome"
+              options={{ headerShown: false }}
+            />
+          ) : (
+            <Stack.Screen name="index" options={{ headerShown: false }} />
+          )}
+        </Stack>
       </ActivityProvider>
     </GameProvider>
   )
