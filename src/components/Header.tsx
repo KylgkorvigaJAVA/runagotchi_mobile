@@ -1,7 +1,7 @@
 import { Image, StyleSheet, TouchableOpacity, View } from "react-native";
 
+import { useGame } from "../providers/GameContext";
 import { AppText } from "./AppText";
-import { useGame } from "./GameContext";
 
 export default function Header() {
   const { money } = useGame();
