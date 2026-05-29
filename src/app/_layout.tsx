@@ -4,6 +4,7 @@ import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 
+import { ActivityProvider } from "@/providers/ActivityContext";
 import { GameProvider } from "@/providers/GameContext";
 
 void SplashScreen.preventAutoHideAsync();
@@ -31,7 +32,9 @@ export default function RootLayout() {
 
   return (
     <GameProvider>
-      <Stack screenOptions={{ headerShown: false }} />
+      <ActivityProvider>
+        <Stack screenOptions={{ headerShown: false }} />
+      </ActivityProvider>
     </GameProvider>
   )
 }

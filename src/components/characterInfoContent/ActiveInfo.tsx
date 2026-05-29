@@ -1,10 +1,16 @@
 import { StyleSheet, View } from "react-native";
 
+import { useActivity } from "../../providers/ActivityContext";
 import { useGame } from "../../providers/GameContext";
 import { AppText } from "../AppText";
 
 export default function ActiveInfo() {
   const { screenState } = useGame();
+  const { elapsedTime } = useActivity();
+
+  const hours = Math.floor(elapsedTime / 3600);
+  const minutes = Math.floor((elapsedTime % 3600) / 60);
+  const seconds = elapsedTime % 60;
 
   return (
     <View style={styles.container}>
@@ -18,7 +24,7 @@ export default function ActiveInfo() {
       </AppText>
 
       <AppText style={styles.info}>
-        Time: 1h 2min
+        Time: {hours}h {minutes}m {seconds}s
       </AppText>
 
       <AppText style={styles.activity}>

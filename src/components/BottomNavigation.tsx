@@ -1,6 +1,6 @@
 import { Image, ImageSourcePropType, StyleSheet, TouchableOpacity, View } from "react-native";
 
-import { screenConfig } from "@/config/ScreenConfig";
+import { useActivity } from "../providers/ActivityContext";
 import { useGame } from "../providers/GameContext";
 
 type BottomNavigationProps = {
@@ -28,7 +28,12 @@ const buttonImages: Record<string, ImageSourcePropType> = {
 
 export default function BottomNavigation({ onPressStats, onPressShop }: BottomNavigationProps) {
   const { screenState, setScreenState } = useGame();
-  const config = screenConfig[screenState];
+  const {
+    startActivity,
+    pauseActivity,
+    resumeActivity,
+    finishActivity,
+  } = useActivity();
 
   const buttonActions: Record<string, () => void> = {
     stats: () => {
@@ -48,18 +53,22 @@ export default function BottomNavigation({ onPressStats, onPressShop }: BottomNa
     },
 
     start: () => {
+      startActivity();
       setScreenState("running");
     },
 
     pause: () => {
+      pauseActivity();
       setScreenState("paused");
     },
 
     continue: () => {
+      resumeActivity();
       setScreenState("running");
     },
 
     finish: () => {
+      finishActivity();
       setScreenState("finished");
     },
   };
