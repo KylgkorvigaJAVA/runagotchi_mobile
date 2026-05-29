@@ -1,7 +1,18 @@
+import { useGame } from "@/providers/GameContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image } from 'expo-image';
 import { BackHandler, Pressable, StyleSheet, View } from 'react-native';
+import { AppText } from "./AppText";
 
 export default function MenuOptions({ closeMenu }: { closeMenu: () => void }) {
+    const { setPetName } = useGame();
+
+    const clearProfile = async () => {
+        await AsyncStorage.removeItem("petName");
+        setPetName("");
+        closeMenu();
+    };
+
     return (
         <View style={styles.container}>
             <Pressable
@@ -18,6 +29,11 @@ export default function MenuOptions({ closeMenu }: { closeMenu: () => void }) {
                     <Image
                         source={require("@/assets/images/btn/settings_btn.png")}
                         style={styles.settingsImage} />
+                </Pressable>
+                <Pressable
+                    style={styles.clearProfileButton}
+                    onPress={() => void clearProfile()}>
+                    <AppText style={styles.clearProfileText}>Clear Profile</AppText>
                 </Pressable>
                 <Pressable
                     style={styles.quitButton}
@@ -57,9 +73,22 @@ const styles = StyleSheet.create({
     settingsButton: {
         marginBottom: 16,
     },
+    clearProfileButton: {
+        width: 150,
+        height: 44,
+        marginBottom: 16,
+        borderRadius: 8,
+        backgroundColor: "#f4ead5",
+        alignItems: "center",
+        justifyContent: "center",
+    },
     closeImage: {
         width: 56,
         height: 56,
+    },
+    clearProfileText: {
+        fontSize: 20,
+        color: "#2f3f2e",
     },
     quitImage: {
         width: 100,
