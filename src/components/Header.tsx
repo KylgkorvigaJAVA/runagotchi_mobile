@@ -9,8 +9,8 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useGame } from "../providers/GameContext";
 import { AppText } from "./AppText";
-import { useGame } from "./GameContext";
 import MenuOptions from "./MenuOptions";
 
 const MENU_HEIGHT = 300;
