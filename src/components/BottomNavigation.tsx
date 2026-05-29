@@ -64,53 +64,130 @@ export default function BottomNavigation({ onPressStats, onPressShop }: BottomNa
     },
   };
 
-  return (
-    <View style={styles.container}>
-      {config.buttons.map((button) => {
-        const isMainButton =
-          button === "startActivity" ||
-          button === "start";
+  const wideButtons = [
+    "start",
+    "pause",
+    "continue",
+    "finish",
+  ];
 
-        return (
-          <TouchableOpacity
-            key={button}
-            style={
-              isMainButton
-                ? styles.mainButton
-                : styles.sideButton
-            }
-            onPress={buttonActions[button]}
-          >
-            <Image
-              source={buttonImages[button]}
-              style={
-                isMainButton
-                  ? styles.mainButtonImage
-                  : styles.sideButtonImage
-              }
-            />
-          </TouchableOpacity>
-        );
-      })}
+  const renderButton = (
+    button: string,
+    isMain = false
+  ) => (
+    <TouchableOpacity
+      key={button}
+      style={
+        wideButtons.includes(button)
+          ? styles.wideButton
+          : isMain
+            ? styles.mainButton
+            : styles.sideButton
+      }
+      onPress={buttonActions[button]}
+    >
+      <Image
+        source={buttonImages[button]}
+        style={
+          wideButtons.includes(button)
+            ? styles.wideButtonImage
+            : isMain
+              ? styles.mainButtonImage
+              : styles.sideButtonImage
+        }
+      />
+    </TouchableOpacity>
+  );
+
+  // HOME
+  if (screenState === "home") {
+    return (
+      <View style={styles.tripleContainer}>
+        {renderButton("stats")}
+        {renderButton("startActivity", true)}
+        {renderButton("shop")}
+      </View>
+    );
+  }
+
+  // READY
+  if (screenState === "ready") {
+    return (
+      <View style={styles.tripleContainer}>
+        {renderButton("back")}
+
+        {renderButton("start")}
+
+        <View style={styles.emptySlot} />
+      </View>
+    );
+  }
+
+  // RUNNING / PAUSED
+  if (
+    screenState === "running" ||
+    screenState === "paused"
+  ) {
+    return (
+      <View style={styles.doubleContainer}>
+        {screenState === "running"
+          ? renderButton("pause")
+          : renderButton("continue")}
+
+        {renderButton("finish")}
+      </View>
+    );
+  }
+
+  // FINISHED
+  return (
+    <View style={styles.finishedContainer}>
+      {renderButton("back")}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  tripleContainer: {
     flexDirection: "row",
-    justifyContent: "center",
+
+    justifyContent: "space-between",
+
     alignItems: "flex-end",
-    gap: 16,
 
     paddingBottom: 24,
-    paddingHorizontal: 16,
+    paddingHorizontal: 24,
+  },
+
+  doubleContainer: {
+    flexDirection: "row",
+
+    justifyContent: "center",
+
+    alignItems: "flex-end",
+
+    gap: 15,
+
+    paddingBottom: 24,
+  },
+
+  finishedContainer: {
+    flexDirection: "row",
+
+    justifyContent: "flex-start",
+
+    paddingLeft: 24,
+    paddingBottom: 24,
+  },
+
+  emptySlot: {
+    width: 100,
+    height: 80,
   },
 
   sideButton: {
     width: 100,
     height: 80,
-
     justifyContent: "center",
     alignItems: "center",
   },
@@ -118,7 +195,13 @@ const styles = StyleSheet.create({
   mainButton: {
     width: 120,
     height: 120,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
+  wideButton: {
+    width: 150,
+    height: 80,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -131,5 +214,11 @@ const styles = StyleSheet.create({
   mainButtonImage: {
     width: 120,
     height: 120,
+  },
+  
+  wideButtonImage: {
+    width: 180,
+    height: 70,
+    resizeMode: "contain",
   },
 });
