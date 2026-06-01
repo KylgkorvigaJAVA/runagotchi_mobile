@@ -117,24 +117,9 @@ const styles = StyleSheet.create({
         width: 56,
         height: 56,
     },
-    // quitImage: {
-    //     width: 100,
-    //     height: 50,
-    // },
-    // settingsImage: {
-    //     width: 100,
-    //     height: 50,
-    // },
+    
     clearProfileText: {
         fontSize: 20,
         color: "#2f3f2e",
-    },
-    quitImage: {
-        width: 100,
-        height: 50,
-    },
-    settingsImage: {
-        width: 100,
-        height: 50,
     },
 });
