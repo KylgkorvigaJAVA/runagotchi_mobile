@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
 
   sideButton: {
     width: 100,
-    height: 80,
+    height: 120,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
 
   wideButton: {
     width: 150,
-    height: 80,
+    height: 120,
     justifyContent: "center",
     alignItems: "center",
   },
