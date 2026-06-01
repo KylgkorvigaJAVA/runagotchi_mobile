@@ -1,9 +1,18 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { useGame } from "@/providers/GameContext";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image } from 'expo-image';
 import { BackHandler, Pressable, StyleSheet, View } from 'react-native';
-import { AppText } from './AppText';
+import { AppText } from "./AppText";
 
 export default function MenuOptions({ closeMenu }: { closeMenu: () => void }) {
+    const { setPetName } = useGame();
+
+    const clearProfile = async () => {
+        await AsyncStorage.removeItem("petName");
+        setPetName("");
+        closeMenu();
+    };
+
     return (
         <View style={styles.container}>
             <Pressable
@@ -22,11 +31,16 @@ export default function MenuOptions({ closeMenu }: { closeMenu: () => void }) {
                     <AppText style={styles.actionText}>SETTINGS</AppText>
                 </Pressable>
                 <Pressable
-                    style={styles.actionButton}
-                    onPress={() => BackHandler.exitApp()}
-                >
-                    <MaterialIcons name="exit-to-app" size={40} color="#fff" style={styles.actionIcon} />
-                    <AppText style={styles.actionText}>QUIT</AppText>
+                    style={styles.clearProfileButton}
+                    onPress={() => void clearProfile()}>
+                    <AppText style={styles.clearProfileText}>Clear Profile</AppText>
+                </Pressable>
+                <Pressable
+                    style={styles.quitButton}
+                    onPress={() => BackHandler.exitApp()}>
+                    <Image
+                        source={require("@/assets/images/btn/quit_btn.png")}
+                        style={styles.quitImage} />
                 </Pressable>
 
             </View>
@@ -89,16 +103,29 @@ const styles = StyleSheet.create({
     settingsButton: {
         marginBottom: 16,
     },
+    clearProfileButton: {
+        width: 150,
+        height: 44,
+        marginBottom: 16,
+        borderRadius: 8,
+        backgroundColor: "#f4ead5",
+        alignItems: "center",
+        justifyContent: "center",
+    },
     closeImage: {
         width: 56,
         height: 56,
     },
-    // quitImage: {
-    //     width: 100,
-    //     height: 50,
-    // },
-    // settingsImage: {
-    //     width: 100,
-    //     height: 50,
-    // },
+    clearProfileText: {
+        fontSize: 20,
+        color: "#2f3f2e",
+    },
+    quitImage: {
+        width: 100,
+        height: 50,
+    },
+    settingsImage: {
+        width: 100,
+        height: 50,
+    },
 });
