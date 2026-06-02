@@ -6,6 +6,7 @@ import { useEffect } from "react";
 
 import { ActivityProvider } from "@/providers/ActivityContext";
 import { GameProvider, useGame } from "@/providers/GameContext";
+import { WeatherProvider } from "@/providers/WeatherContext";
 
 void SplashScreen.preventAutoHideAsync();
 
@@ -55,9 +56,11 @@ export default function RootLayout() {
 
   return (
     <GameProvider>
-      <ActivityProvider>
-        <AppStack />
-      </ActivityProvider>
+      <WeatherProvider>
+        <ActivityProvider>
+          <AppStack />
+        </ActivityProvider>
+      </WeatherProvider>
     </GameProvider>
   )
 }

@@ -1,19 +1,30 @@
 import BottomNavigation from "@/components/BottomNavigation";
 import MainContent from "@/components/MainContent";
 import WeatherBackground from "@/components/WeatherBackground";
+import type { WeatherType } from "@/lib/weather";
+import { useWeather } from "@/providers/WeatherContext";
 import { useRef, useState } from "react";
-import { Animated, Dimensions, Image, PanResponder, Pressable, StyleSheet, View } from "react-native";
+import { Animated, Dimensions, Image, PanResponder, Pressable, StyleSheet, Text, View } from "react-native";
 
 const EDGE_GAP = 25;
 const PANEL_WIDTH = Math.max(0, Dimensions.get("window").width - EDGE_GAP);
+const TEST_WEATHERS: WeatherType[] = [
+  "sunny",
+  "rainy",
+  "cloudy",
+  "night_cloudy",
+  "night_clear",
+  "night_rainy",
+];
 
 export default function Index() {
-  //for weather api
-  const [weather] = useState<"sunny" | "rainy">("sunny");
+  const { weather, isLoading, error, refreshWeather, clearSavedLocation } = useWeather();
+  const [weatherOverride, setWeatherOverride] = useState<WeatherType | null>(null);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isShopOpen, setIsShopOpen] = useState(false);
   const statsX = useRef(new Animated.Value(-PANEL_WIDTH)).current;
   const shopX = useRef(new Animated.Value(PANEL_WIDTH)).current;
+  const activeWeather = weatherOverride ?? weather;
 
   const openStats = () => {
     if (isShopOpen) {
@@ -77,7 +88,46 @@ export default function Index() {
 
   return (
     <View style={{ flex: 1 }}>
-      <WeatherBackground weather={weather} />
+      <WeatherBackground weather={activeWeather} />
+      {__DEV__ && (
+        <View style={styles.debugBox} pointerEvents="box-none">
+          <View style={styles.debugPanel}>
+            <Pressable style={styles.debugButton} onPress={() => void refreshWeather()}>
+              <Text style={styles.debugText}>{isLoading ? "Refreshing..." : `Live: ${weather}`}</Text>
+            </Pressable>
+            <Pressable style={styles.debugButtonSecondary} onPress={() => setWeatherOverride(null)}>
+              <Text style={styles.debugTextSecondary}>Use live weather</Text>
+            </Pressable>
+            <Pressable
+              style={styles.debugButtonSecondary}
+              onPress={async () => {
+                await clearSavedLocation();
+                await refreshWeather();
+              }}
+            >
+              <Text style={styles.debugTextSecondary}>Reset saved location</Text>
+            </Pressable>
+            <View style={styles.debugGrid}>
+              {TEST_WEATHERS.map((item) => {
+                const isActive = activeWeather === item;
+
+                return (
+                  <Pressable
+                    key={item}
+                    style={[styles.weatherChip, isActive && styles.weatherChipActive]}
+                    onPress={() => setWeatherOverride(item)}
+                  >
+                    <Text style={[styles.weatherChipText, isActive && styles.weatherChipTextActive]}>
+                      {item}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+          {error ? <Text style={styles.debugError}>{error}</Text> : null}
+        </View>
+      )}
       
       <MainContent />
       <BottomNavigation onPressStats={openStats} onPressShop={openShop} />
@@ -171,5 +221,76 @@ const styles = StyleSheet.create({
   },
   swipeEdgeLeft: {
     left: 4,
+  },
+  debugBox: {
+    position: "absolute",
+    top: 160,
+    left: 0,
+    zIndex: 30,
+    alignItems: "flex-start",
+  },
+  debugPanel: {
+    backgroundColor: "rgba(0,0,0,0.45)",
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+    paddingVertical: 8,
+    paddingLeft: 8,
+    paddingRight: 10,
+    gap: 6,
+    width: 132,
+  },
+  debugButton: {
+    backgroundColor: "rgba(0,0,0,0.4)",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  debugText: {
+    color: "#fff",
+    fontSize: 11,
+  },
+  debugButtonSecondary: {
+    backgroundColor: "rgba(255,255,255,0.14)",
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  debugTextSecondary: {
+    color: "#fff",
+    fontSize: 11,
+  },
+  debugGrid: {
+    flexDirection: "column",
+    gap: 4,
+  },
+  weatherChip: {
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.25)",
+    borderRadius: 999,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+  },
+  weatherChipActive: {
+    backgroundColor: "rgba(255,255,255,0.22)",
+    borderColor: "rgba(255,255,255,0.6)",
+  },
+  weatherChipText: {
+    color: "rgba(255,255,255,0.75)",
+    fontSize: 10,
+    textTransform: "capitalize",
+  },
+  weatherChipTextActive: {
+    color: "#fff",
+  },
+  debugError: {
+    marginTop: 6,
+    color: "#ffdddd",
+    backgroundColor: "rgba(255,0,0,0.2)",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    fontSize: 10,
   },
 });
