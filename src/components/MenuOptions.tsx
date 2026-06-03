@@ -1,4 +1,5 @@
 import { useGame } from "@/providers/GameContext";
+import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image } from 'expo-image';
 import { BackHandler, Pressable, StyleSheet, View } from 'react-native';
