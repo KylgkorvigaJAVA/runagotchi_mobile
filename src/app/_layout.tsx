@@ -5,9 +5,32 @@ import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 
 import { ActivityProvider } from "@/providers/ActivityContext";
-import { GameProvider } from "@/providers/GameContext";
+import { GameProvider, useGame } from "@/providers/GameContext";
 
 void SplashScreen.preventAutoHideAsync();
+
+function AppStack() {
+  const { isHydrated, hasPetName } = useGame();
+
+  if (!isHydrated) {
+    return null;
+  }
+
+  return (
+    <Stack>
+      {hasPetName ? (
+        <Stack.Screen
+          name="index"
+          options={{ headerShown: false }} />
+      ) : (
+        <Stack.Screen
+          name="welcome"
+          options={{ headerShown: false }}
+        />
+      )}
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -33,7 +56,7 @@ export default function RootLayout() {
   return (
     <GameProvider>
       <ActivityProvider>
-        <Stack screenOptions={{ headerShown: false }} />
+        <AppStack />
       </ActivityProvider>
     </GameProvider>
   )

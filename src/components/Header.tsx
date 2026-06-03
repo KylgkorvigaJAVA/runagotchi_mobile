@@ -14,27 +14,33 @@ import { AppText } from "./AppText";
 import MenuOptions from "./MenuOptions";
 
 const MENU_HEIGHT = 300;
-const MENU_TOP = 12;
-const MENU_SIDE = 16;
-const MENU_HIDDEN_Y = -(MENU_HEIGHT + MENU_TOP + 24);
+const MENU_SCALE_START = 0.82;
 
 export default function Header() {
   const { money } = useGame();
   const [menuVisible, setMenuVisible] = useState(false);
-  const menuTranslateY = useRef(new Animated.Value(MENU_HIDDEN_Y)).current;
+  const menuScale = useRef(new Animated.Value(MENU_SCALE_START)).current;
+  const menuOpacity = useRef(new Animated.Value(0)).current;
   const menuBackdropOpacity = useRef(new Animated.Value(0)).current;
 
   const openMenu = () => {
-    menuTranslateY.setValue(MENU_HIDDEN_Y);
+    menuScale.setValue(MENU_SCALE_START);
+    menuOpacity.setValue(0);
     menuBackdropOpacity.setValue(0);
     setMenuVisible(true);
   };
 
   const animateMenuIn = () => {
     Animated.parallel([
-      Animated.timing(menuTranslateY, {
-        toValue: 0,
-        duration: 220,
+      Animated.spring(menuScale, {
+        toValue: 1,
+        friction: 7,
+        tension: 90,
+        useNativeDriver: true,
+      }),
+      Animated.timing(menuOpacity, {
+        toValue: 1,
+        duration: 180,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }),
@@ -48,10 +54,15 @@ export default function Header() {
 
   const closeMenu = () => {
     Animated.parallel([
-      Animated.timing(menuTranslateY, {
-        toValue: MENU_HIDDEN_Y,
-        duration: 180,
+      Animated.timing(menuScale, {
+        toValue: MENU_SCALE_START,
+        duration: 150,
         easing: Easing.in(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(menuOpacity, {
+        toValue: 0,
+        duration: 140,
         useNativeDriver: true,
       }),
       Animated.timing(menuBackdropOpacity, {
@@ -89,14 +100,17 @@ export default function Header() {
         onRequestClose={closeMenu}
       >
         <View style={styles.modalRoot}>
-          <Animated.View style={[styles.backdrop, { opacity: menuBackdropOpacity }]}>
+          <Animated.View style={[styles.backdrop, { opacity: menuBackdropOpacity }]}> 
             <Pressable style={StyleSheet.absoluteFill} onPress={closeMenu} />
           </Animated.View>
 
           <Animated.View
             style={[
               styles.menuWrapper,
-              { transform: [{ translateY: menuTranslateY }] },
+              {
+                opacity: menuOpacity,
+                transform: [{ scale: menuScale }],
+              },
             ]}
           >
             <MenuOptions closeMenu={closeMenu} />
@@ -134,15 +148,17 @@ const styles = StyleSheet.create({
   },
   modalRoot: {
     flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   backdrop: {
     ...StyleSheet.absoluteFill,
   },
   menuWrapper: {
     position: "absolute",
-    top: MENU_TOP,
-    left: MENU_SIDE,
-    right: MENU_SIDE,
+    left: 24,
+    right: 24,
+    alignItems: "center",
   },
   coinIcon: {
     width: 120,
