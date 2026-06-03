@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import {
   Animated,
+  Dimensions,
   Easing,
   Image,
   Modal,
@@ -12,16 +13,20 @@ import {
 import { useGame } from "../providers/GameContext";
 import { AppText } from "./AppText";
 import MenuOptions from "./MenuOptions";
+import SettingsContent from "./SettingsContent";
 
-const MENU_HEIGHT = 300;
 const MENU_SCALE_START = 0.82;
+const SETTINGS_PANEL_OFFSET = Dimensions.get("window").width;
 
 export default function Header() {
   const { money } = useGame();
   const [menuVisible, setMenuVisible] = useState(false);
+  const [settingsVisible, setSettingsVisible] = useState(false);
   const menuScale = useRef(new Animated.Value(MENU_SCALE_START)).current;
   const menuOpacity = useRef(new Animated.Value(0)).current;
   const menuBackdropOpacity = useRef(new Animated.Value(0)).current;
+  const settingsTranslateX = useRef(new Animated.Value(SETTINGS_PANEL_OFFSET)).current;
+  const settingsBackdropOpacity = useRef(new Animated.Value(0)).current;
 
   const openMenu = () => {
     menuScale.setValue(MENU_SCALE_START);
@@ -52,7 +57,7 @@ export default function Header() {
     ]).start();
   };
 
-  const closeMenu = () => {
+  const closeMenu = (afterClose?: () => void) => {
     Animated.parallel([
       Animated.timing(menuScale, {
         toValue: MENU_SCALE_START,
@@ -73,6 +78,49 @@ export default function Header() {
     ]).start(({ finished }) => {
       if (finished) {
         setMenuVisible(false);
+        afterClose?.();
+      }
+    });
+  };
+
+  const openSettings = () => {
+    settingsTranslateX.setValue(SETTINGS_PANEL_OFFSET);
+    settingsBackdropOpacity.setValue(0);
+    setSettingsVisible(true);
+  };
+
+  const animateSettingsIn = () => {
+    Animated.parallel([
+      Animated.timing(settingsTranslateX, {
+        toValue: 0,
+        duration: 220,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(settingsBackdropOpacity, {
+        toValue: 1,
+        duration: 180,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
+
+  const closeSettings = () => {
+    Animated.parallel([
+      Animated.timing(settingsTranslateX, {
+        toValue: SETTINGS_PANEL_OFFSET,
+        duration: 180,
+        easing: Easing.in(Easing.cubic),
+        useNativeDriver: true,
+      }),
+      Animated.timing(settingsBackdropOpacity, {
+        toValue: 0,
+        duration: 140,
+        useNativeDriver: true,
+      }),
+    ]).start(({ finished }) => {
+      if (finished) {
+        setSettingsVisible(false);
       }
     });
   };
@@ -101,7 +149,10 @@ export default function Header() {
       >
         <View style={styles.modalRoot}>
           <Animated.View style={[styles.backdrop, { opacity: menuBackdropOpacity }]}> 
-            <Pressable style={StyleSheet.absoluteFill} onPress={closeMenu} />
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={() => closeMenu()}
+            />
           </Animated.View>
 
           <Animated.View
@@ -113,7 +164,39 @@ export default function Header() {
               },
             ]}
           >
-            <MenuOptions closeMenu={closeMenu} />
+            <MenuOptions
+              closeMenu={closeMenu}
+              openSettings={openSettings}
+            />
+          </Animated.View>
+        </View>
+      </Modal>
+      <Modal
+        visible={settingsVisible}
+        transparent={true}
+        animationType="none"
+        onShow={animateSettingsIn}
+        onRequestClose={closeSettings}
+      >
+        <View style={styles.settingsModalRoot}>
+          <Animated.View
+            style={[styles.backdrop, { opacity: settingsBackdropOpacity }]}
+          >
+            <Pressable
+              style={StyleSheet.absoluteFill}
+              onPress={closeSettings}
+            />
+          </Animated.View>
+
+          <Animated.View
+            style={[
+              styles.settingsWrapper,
+              {
+                transform: [{ translateX: settingsTranslateX }],
+              },
+            ]}
+          >
+            <SettingsContent onClose={closeSettings} />
           </Animated.View>
         </View>
       </Modal>
@@ -151,6 +234,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  settingsModalRoot: {
+    flex: 1,
+    justifyContent: "center",
+  },
   backdrop: {
     ...StyleSheet.absoluteFill,
   },
@@ -159,6 +246,9 @@ const styles = StyleSheet.create({
     left: 24,
     right: 24,
     alignItems: "center",
+  },
+  settingsWrapper: {
+    flex: 1,
   },
   coinIcon: {
     width: 120,
