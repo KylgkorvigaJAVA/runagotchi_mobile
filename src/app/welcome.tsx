@@ -1,7 +1,6 @@
 import { APP_FONT_FAMILY, AppText } from "@/components/AppText";
+import { savePetName } from "@/features/profile/storage";
 import { useGame } from "@/providers/GameContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { router } from "expo-router";
 import { useState } from "react";
 import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
 
@@ -23,13 +22,12 @@ export default function Welcome() {
 
   const addPetName = async () => {
     const name = petName.trim();
+
     if (!name) {
       return;
     }
-
-    await AsyncStorage.setItem("petName", name);
     setGamePetName(name);
-    router.replace("/");
+    await savePetName(name);
   };
 
   const selectPreviousPet = () => {

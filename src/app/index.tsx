@@ -76,7 +76,7 @@ export default function Index() {
   ).current;
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <WeatherBackground weather={weather} />
       
       <MainContent />
@@ -106,6 +106,10 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#7FA37C",
+  },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.25)",

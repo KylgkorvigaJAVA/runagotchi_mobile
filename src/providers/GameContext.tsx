@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { loadPetName } from "@/features/profile/storage";
 import {
   createContext,
   PropsWithChildren,
@@ -49,7 +49,7 @@ export function GameProvider({
 
   useEffect(() => {
     const hydrateGame = async () => {
-      const storedName = await AsyncStorage.getItem("petName");
+      const storedName = await loadPetName();
 
       if (storedName) {
         setPetName(storedName);

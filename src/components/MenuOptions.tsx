@@ -1,24 +1,19 @@
-import { useGame } from "@/providers/GameContext";
 import { MaterialIcons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Image } from 'expo-image';
 import { BackHandler, Pressable, StyleSheet, View } from 'react-native';
 import { AppText } from "./AppText";
 
-export default function MenuOptions({ closeMenu }: { closeMenu: () => void }) {
-    const { setPetName } = useGame();
+type MenuOptionsProps = {
+    closeMenu: (afterClose?: () => void) => void;
+    openSettings: () => void;
+};
 
-    const clearProfile = async () => {
-        await AsyncStorage.removeItem("petName");
-        setPetName("");
-        closeMenu();
-    };
-
+export default function MenuOptions({ closeMenu, openSettings }: MenuOptionsProps) {
     return (
         <View style={styles.container}>
             <Pressable
                 style={styles.closeButton}
-                onPress={closeMenu}>
+                onPress={() => closeMenu()}>
                 <Image
                     source={require("@/assets/images/btn/close_btn.png")}
                     style={styles.closeImage} />
@@ -26,15 +21,10 @@ export default function MenuOptions({ closeMenu }: { closeMenu: () => void }) {
             <View style={styles.menuButtonsContainer}>
                 <Pressable
                     style={styles.actionButton}
-                    onPress={() => console.log("Settings pressed")}
+                    onPress={() => closeMenu(openSettings)}
                 >
                     <MaterialIcons name="settings" size={40} color="#fff" style={styles.actionIcon} />
                     <AppText style={styles.actionText}>SETTINGS</AppText>
-                </Pressable>
-                <Pressable
-                    style={styles.clearProfileButton}
-                    onPress={() => void clearProfile()}>
-                    <AppText style={styles.clearProfileText}>Clear Profile</AppText>
                 </Pressable>
                 <Pressable
                     style={styles.quitButton}
@@ -101,31 +91,11 @@ const styles = StyleSheet.create({
     quitButton: {
         marginBottom: 16,
     },
-    settingsButton: {
-        marginBottom: 16,
-    },
-    clearProfileButton: {
-        width: 150,
-        height: 44,
-        marginBottom: 16,
-        borderRadius: 8,
-        backgroundColor: "#f4ead5",
-        alignItems: "center",
-        justifyContent: "center",
-    },
     closeImage: {
         width: 56,
         height: 56,
     },
-    clearProfileText: {
-        fontSize: 20,
-        color: "#2f3f2e",
-    },
     quitImage: {
-        width: 100,
-        height: 50,
-    },
-    settingsImage: {
         width: 100,
         height: 50,
     },
