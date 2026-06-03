@@ -1,7 +1,6 @@
 import { StyleSheet, Text, TextProps } from "react-native";
 
-// const FONT_FAMILY = "Rubik Mono One";
-const FONT_FAMILY = "Changa One Regular";
+export const APP_FONT_FAMILY = "Changa One Regular";
 
 export function AppText(props: TextProps) {
   const { style, children, ...rest } = props;
@@ -18,6 +17,6 @@ export function AppText(props: TextProps) {
 
 const styles = StyleSheet.create({
   text: {
-    fontFamily: FONT_FAMILY,
+    fontFamily: APP_FONT_FAMILY,
   },
 });

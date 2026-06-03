@@ -1,7 +1,9 @@
+import { loadPetName } from "@/features/profile/storage";
 import {
   createContext,
   PropsWithChildren,
   useContext,
+  useEffect,
   useState,
 } from "react";
 
@@ -13,6 +15,9 @@ type ScreenState =
   | "finished";
 
 type GameContextType = {
+  isHydrated: boolean;
+  hasPetName: boolean;
+
   health: number;
   setHealth: (v: number) => void;
 
@@ -35,15 +40,32 @@ const GameContext =
 export function GameProvider({
   children,
 }: PropsWithChildren) {
+  const [isHydrated, setIsHydrated] = useState(false);
   const [health, setHealth] = useState(50);
   const [money, setMoney] = useState(0);
   const [energy, setEnergy] = useState(80);
   const [screenState, setScreenState] = useState<ScreenState>("home");
-  const [petName, setPetName] = useState("Bella");
+  const [petName, setPetName] = useState("");
+
+  useEffect(() => {
+    const hydrateGame = async () => {
+      const storedName = await loadPetName();
+
+      if (storedName) {
+        setPetName(storedName);
+      }
+
+      setIsHydrated(true);
+    };
+
+    void hydrateGame();
+  }, []);
 
   return (
     <GameContext.Provider
       value={{
+        isHydrated,
+        hasPetName: petName.trim().length > 0,
         health,
         setHealth,
         money,

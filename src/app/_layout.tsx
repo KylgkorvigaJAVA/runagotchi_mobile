@@ -1,13 +1,63 @@
 import { useFonts } from "expo-font";
 import * as NavigationBar from "expo-navigation-bar";
-import { Stack } from "expo-router";
+import { router, Stack, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
+import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
 
 import { ActivityProvider } from "@/providers/ActivityContext";
-import { GameProvider } from "@/providers/GameContext";
+import { GameProvider, useGame } from "@/providers/GameContext";
 
 void SplashScreen.preventAutoHideAsync();
+
+function AppStack() {
+  // We need to get the game state to determine which screen to show
+  const { isHydrated, hasPetName } = useGame();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (isHydrated) {
+      void SplashScreen.hideAsync();
+    }
+  }, [isHydrated]);
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    const targetPath = hasPetName ? "/" : "/welcome";
+
+    if (pathname !== targetPath) {
+      router.replace(targetPath);
+    }
+  }, [hasPetName, isHydrated, pathname]);
+
+  // If the game state is not yet hydrated, we don't want to render anything
+  // This prevents a flash of the welcome screen before the game state is loaded
+  if (!isHydrated) {
+    return null;
+  }
+
+  return (
+    <Stack
+      screenOptions={{
+        animation: "fade",
+        headerShown: false,
+        contentStyle: {
+          backgroundColor: "#7FA37C",
+        },
+      }}
+    >
+      <Stack.Screen
+        name="index"
+      />
+      <Stack.Screen
+        name="welcome"
+      />
+    </Stack>
+  );
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
@@ -16,15 +66,10 @@ export default function RootLayout() {
   });
 
   useEffect(() => {
+    void SystemUI.setBackgroundColorAsync("#7FA37C");
     // Hide navigation bar with immersive mode (shows on swipe-up)
-    NavigationBar.setVisibilityAsync("hidden");
+    void NavigationBar.setVisibilityAsync("hidden");
   }, []);
-
-  useEffect(() => {
-    if (fontsLoaded) {
-      void SplashScreen.hideAsync();
-    }
-  }, [fontsLoaded]);
 
   if (!fontsLoaded) {
     return null;
@@ -33,9 +78,8 @@ export default function RootLayout() {
   return (
     <GameProvider>
       <ActivityProvider>
-        <Stack screenOptions={{ headerShown: false }} />
+        <AppStack />
       </ActivityProvider>
     </GameProvider>
   )
 }
-

@@ -76,7 +76,7 @@ export default function Index() {
   ).current;
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={styles.container}>
       <WeatherBackground weather={weather} />
       
       <MainContent />
@@ -106,6 +106,10 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#7FA37C",
+  },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.25)",
@@ -117,7 +121,11 @@ const styles = StyleSheet.create({
     right: EDGE_GAP,
     top: EDGE_GAP,
     bottom: EDGE_GAP,
-    backgroundColor: "#f4ead5",
+    backgroundColor: "#7FA37C",
+    borderRightWidth: 5,
+    borderTopWidth: 5,
+    borderBottomWidth: 5,
+    borderColor: "#486346",
     zIndex: 20,
     borderRadius: 16,
     paddingTop: 24,
@@ -129,7 +137,11 @@ const styles = StyleSheet.create({
     left: EDGE_GAP,
     top: EDGE_GAP,
     bottom: EDGE_GAP,
-    backgroundColor: "#f4ead5",
+    backgroundColor: "#7FA37C",
+    borderLeftWidth: 5,
+    borderTopWidth: 5,
+    borderBottomWidth: 5,
+    borderColor: "#486346",
     zIndex: 20,
     borderRadius: 16,
     paddingTop: 24,
