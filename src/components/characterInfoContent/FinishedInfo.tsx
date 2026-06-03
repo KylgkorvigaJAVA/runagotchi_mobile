@@ -11,17 +11,20 @@ export default function FinishedInfo() {
   const minutes = Math.floor((elapsedTime % 3600) / 60);
   const seconds = elapsedTime % 60;
 
+  const distanceMeters = latestFinishedActivity?.distanceMeters ?? 0;
+  const averageSpeedKmh = latestFinishedActivity?.averageSpeedKmh ?? 0;
+
   return (
     <View style={styles.container}>
       
       <View style={styles.mapPlaceholder} />
 
       <AppText style={styles.info}>
-        Distance: 67km
+        Distance: {(distanceMeters / 1000).toFixed(2)} km
       </AppText>
 
       <AppText style={styles.info}>
-        Avg speed: 67km/h
+        Average speed: {averageSpeedKmh.toFixed(1)} km/h
       </AppText>
 
       <AppText style={styles.info}>
