@@ -6,10 +6,21 @@
     "orientation": "portrait",
     "scheme": "runagotchimobile",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "infoPlist": {
+        "UIBackgroundModes": ["location"],
+        "NSLocationWhenInUseUsageDescription": "Runagotchi uses your location to track runs",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Runagotchi uses your location to continue tracking runs while the app is in the background"
+      }
     },
     "android": {
-      "enableEdgeToEdge": false
+      "enableEdgeToEdge": false,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE"
+      ]
     },
     "web": {
       "output": "static",
@@ -17,6 +28,17 @@
     },
     "plugins": [
       "expo-router",
+
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Runagotchi uses your location to track runs",
+          "locationAlwaysAndWhenInUsePermission": "Runagotchi uses your location to continue tracking runs while the app is in the background",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isIosBackgroundLocationEnabled": true
+        }
+      ],
+
       [
         "expo-splash-screen",
         {
@@ -27,8 +49,10 @@
           }
         }
       ],
+
       "expo-font"
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

@@ -1,3 +1,4 @@
+import { LOCATION_TASK_NAME } from "@/features/location/gpsTask";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { getDistance } from "geolib";
@@ -37,9 +38,9 @@ type ActivityContextType = {
   isPaused: boolean;
   latestFinishedActivity: ActivityRecord | null;
 
-  startActivity: () => void;
-  pauseActivity: () => void;
-  resumeActivity: () => void;
+  startActivity: () => Promise<void>;
+  pauseActivity: () => Promise<void>;
+  resumeActivity: () => Promise<void>;
   finishActivity: () => Promise<void>;
 };
 
@@ -48,29 +49,33 @@ const ActivityContext = createContext<ActivityContextType | null>(null);
 
 
 export function ActivityProvider({ children, }: PropsWithChildren) {
-  const [startedAt, setStartedAt] = useState<number | null>(null);
-  const [pausedAt, setPausedAt] = useState<number | null>(null);
-  const [pauseAccumulated, setPauseAccumulated] = useState(0);
-
+  // STATES
   const [elapsedTime, setElapsedTime] = useState(0);
   const [distanceMeters, setDistanceMeters] = useState(0);
-  const [averageSpeedKmh, setAverageSpeedKmh] = useState(0);
   const [currentSpeedKmh, setCurrentSpeedKmh] = useState(0);
 
   const [isRunning, setIsRunning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+
   const [latestFinishedActivity, setLatestFinishedActivity] = useState<ActivityRecord | null>(null);
 
-
+  // REFS
   const startedAtRef = useRef<number | null>(null);
   const pausedAtRef = useRef<number | null>(null);
   const pauseAccumulatedRef = useRef(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const locationSubscriptionRef = useRef<Location.LocationSubscription | null>(null);
   const previousLocationRef = useRef<GpsPoint | null>(null);
 
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const locationForegroundSubscriptionRef = useRef<Location.LocationSubscription | null>(null);
 
+  // AVG SPEED derived
+  const averageSpeedKmh =
+  elapsedTime > 0
+    ? (distanceMeters * 3600) / (elapsedTime * 1000)
+    : 0;
+
+  // TIMER
   const calculateElapsed = () => {
     if (!startedAtRef.current) return 0;
 
@@ -82,7 +87,6 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
     return Math.floor((now - startedAtRef.current - pausedTime - currentPause) / 1000);
   };
 
-
   const startUITimer = () => {
     stopUITimer();
 
@@ -91,7 +95,6 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
     }, 1000);
   };
 
-
   const stopUITimer = () => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -99,73 +102,77 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
     }
   };
 
-
+  // GPS
   const startLocationTracking = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
+    const fg = await Location.requestForegroundPermissionsAsync();
+    const bg = await Location.requestBackgroundPermissionsAsync();
 
-    if (status !== "granted") {
-      console.warn("Location permission denied");
-      return;
-    }
+    if (fg.status !== "granted" || bg.status !== "granted") return;
 
-    locationSubscriptionRef.current = await Location.watchPositionAsync(
+    // FOREGROUND TRACKING
+    locationForegroundSubscriptionRef.current = await Location.watchPositionAsync(
       {
-        accuracy:
-          Location.Accuracy.BestForNavigation,
+        accuracy: Location.Accuracy.BestForNavigation,
         distanceInterval: 5,
         timeInterval: 2000,
       },
       (location) => {
-        const currentPoint: GpsPoint = {
+        const point: GpsPoint = {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
         };
 
-        const speedMps =
-          Math.max(0, location.coords.speed ?? 0);
-
-        setCurrentSpeedKmh(speedMps * 3.6);
+        const speedMps = Math.max(0, location.coords.speed ?? 0);
+        const kmh = Math.max(0, speedMps * 3.6);
+        setCurrentSpeedKmh((prev) => prev * 0.7 + kmh * 0.3);
 
         if (previousLocationRef.current) {
-          const segmentDistance = getDistance(
-            previousLocationRef.current,
-            currentPoint
-          );
+          const dist = getDistance(previousLocationRef.current, point);
 
-          // Ignore GPS jumps
-          if (segmentDistance < 100) {
-            setDistanceMeters(
-              (prev) => prev + segmentDistance
-            );
+          if (dist > 3 && dist < 50) {
+            setDistanceMeters((p) => p + dist);
           }
         }
 
-        previousLocationRef.current = currentPoint;
+        previousLocationRef.current = point;
       }
     );
+
+    // BACKGROUND TRACKING
+    await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+      accuracy: Location.Accuracy.BestForNavigation,
+      distanceInterval: 5,
+      timeInterval: 2000,
+      foregroundService: {
+        notificationTitle: "Run tracking active",
+        notificationBody: "Runagotchi is tracking your activity",
+      },
+      pausesUpdatesAutomatically: false,
+    });
   };
 
+  const stopLocationTracking = async () => {
+    locationForegroundSubscriptionRef.current?.remove();
+    locationForegroundSubscriptionRef.current = null;
 
-  const stopLocationTracking = () => {
-    locationSubscriptionRef.current?.remove();
-    locationSubscriptionRef.current = null;
-  };
-
-
-  const saveActivityToStorage = async (activityRecord: ActivityRecord) => {
-    try {
-      const existing = await AsyncStorage.getItem("activities");
-      const parsed: ActivityRecord[] = existing ? JSON.parse(existing) : [];
-
-      parsed.push(activityRecord);
-
-      await AsyncStorage.setItem("activities", JSON.stringify(parsed));
-    } catch (error) {
-      console.error("Failed to save activity", error);
+    const hasTask = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+    if (hasTask) {
+      await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
     }
   };
 
+  // STORAGE
+  const saveActivityToStorage = async (record: ActivityRecord) => {
+    const existing = await AsyncStorage.getItem("activities");
+    const parsed: ActivityRecord[] = existing ? JSON.parse(existing) : [];
 
+    parsed.push(record);
+
+    await AsyncStorage.setItem("activities", JSON.stringify(parsed));
+  };
+
+
+  // ACTIVITY ACTIONS
   const startActivity = async () => {
     const now = Date.now();
 
@@ -175,12 +182,7 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
 
     previousLocationRef.current = null;
 
-    setStartedAt(now);
-    setPausedAt(null);
-    setPauseAccumulated(0);
-
     setDistanceMeters(0);
-    setAverageSpeedKmh(0);
     setCurrentSpeedKmh(0);
 
     setIsRunning(true);
@@ -188,54 +190,34 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
     setElapsedTime(0);
 
     startUITimer();
-
     await startLocationTracking();
   };
 
 
-  const pauseActivity = () => {
-    if (!startedAtRef.current) return;
-
+  const pauseActivity = async () => {
     const now = Date.now();
 
     pausedAtRef.current = now;
 
-    setCurrentSpeedKmh(0);
-
-    setPausedAt(now);
     setIsPaused(true);
     setIsRunning(false);
+    setCurrentSpeedKmh(0);
 
     stopUITimer();
-
-    stopLocationTracking();
+    await stopLocationTracking();
   };
 
 
   const resumeActivity = async () => {
-    if (!startedAtRef.current || !pausedAtRef.current)
-      return;
+    if (!pausedAtRef.current) return;
 
-    const now = Date.now();
-
-    const pauseDuration =
-      now - pausedAtRef.current;
-
-    pauseAccumulatedRef.current += pauseDuration;
-
-    setPauseAccumulated(
-      pauseAccumulatedRef.current
-    );
-
+    pauseAccumulatedRef.current += Date.now() - pausedAtRef.current;
     pausedAtRef.current = null;
-
-    setPausedAt(null);
 
     setIsPaused(false);
     setIsRunning(true);
 
     startUITimer();
-
     await startLocationTracking();
   };
 
@@ -246,53 +228,31 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
 
     if (!startedAtRef.current) return;
 
-    const finalElapsed = calculateElapsed();
-
-    const activityRecord: ActivityRecord = {
+    const record: ActivityRecord = {
       id: Date.now().toString(),
-      startedAt: new Date(startedAtRef.current).toISOString(),
-      elapsedTime: finalElapsed,
-
+      startedAt: new Date(startedAtRef.current ?? Date.now()).toISOString(),
+      elapsedTime,
       distanceMeters,
       averageSpeedKmh,
     };
 
-    setLatestFinishedActivity(activityRecord);
+    setLatestFinishedActivity(record);
+
+    setIsRunning(false);
+    setIsPaused(false);
+
+    setElapsedTime(0);
+    setDistanceMeters(0);
+    setCurrentSpeedKmh(0);
 
     startedAtRef.current = null;
     pausedAtRef.current = null;
     pauseAccumulatedRef.current = 0;
 
-    setStartedAt(null);
-    setPausedAt(null);
-    setPauseAccumulated(0);
-
-    setIsRunning(false);
-    setIsPaused(false);
-    setElapsedTime(0);
-
-    await saveActivityToStorage(activityRecord);
-
     previousLocationRef.current = null;
 
-    setCurrentSpeedKmh(0);
-    setDistanceMeters(0);
-    setAverageSpeedKmh(0);
+    await saveActivityToStorage(record);
   };
-
-
-  useEffect(() => {
-    if (elapsedTime === 0) {
-      setAverageSpeedKmh(0);
-      return;
-    }
-
-    const hours = elapsedTime / 3600;
-    const km = distanceMeters / 1000;
-
-    setAverageSpeedKmh(km / hours);
-  }, [distanceMeters, elapsedTime]);
-  
 
   // cleanup on app reload/unmount
   useEffect(() => {
@@ -330,9 +290,7 @@ export function useActivity() {
   const ctx = useContext(ActivityContext);
 
   if (!ctx) {
-    throw new Error(
-      "useActivity must be inside ActivityProvider"
-    );
+    throw new Error("useActivity must be inside ActivityProvider");
   }
 
   return ctx;
