@@ -27,11 +27,6 @@ export default function MenuOptions({ closeMenu, openSettings }: MenuOptionsProp
                     <AppText style={styles.actionText}>SETTINGS</AppText>
                 </Pressable>
                 <Pressable
-                    style={styles.clearProfileButton}
-                    onPress={() => void clearProfile()}>
-                    <AppText style={styles.clearProfileText}>Clear Profile</AppText>
-                </Pressable>
-                <Pressable
                     style={styles.actionButton}
                     onPress={() => BackHandler.exitApp()}
                 >
