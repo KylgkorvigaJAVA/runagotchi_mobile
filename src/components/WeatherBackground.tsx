@@ -3,7 +3,7 @@ import { ImageBackground, ImageSourcePropType, StyleSheet } from "react-native";
 import type { WeatherType } from "@/lib/weather";
 
 interface WeatherBackgroundProps {
-  weather?: WeatherType;
+  weather?: WeatherType | string | null;
 }
 
 const weatherImages: Record<WeatherType, ImageSourcePropType> = {
@@ -15,12 +15,22 @@ const weatherImages: Record<WeatherType, ImageSourcePropType> = {
   night_rainy: require("@/assets/images/bg/bg_rainy_night.png"),
 };
 
+const fallbackWeatherImage = require("@/assets/images/bg/bg_partly_cloudy_day.png");
+
+function getWeatherImage(weather?: WeatherBackgroundProps["weather"]) {
+  if (weather && Object.prototype.hasOwnProperty.call(weatherImages, weather)) {
+    return weatherImages[weather as WeatherType];
+  }
+
+  return fallbackWeatherImage;
+}
+
 export default function WeatherBackground({
   weather = "sunny",
 }: WeatherBackgroundProps) {
   return (
     <ImageBackground
-      source={weatherImages[weather]}
+      source={getWeatherImage(weather)}
       style={styles.container}
       resizeMode="cover"
     />
