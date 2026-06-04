@@ -5,6 +5,7 @@ import * as SplashScreen from "expo-splash-screen";
 import * as SystemUI from "expo-system-ui";
 import { useEffect } from "react";
 
+import "@/features/location/gpsTask";
 import { ActivityProvider } from "@/providers/ActivityContext";
 import { GameProvider, useGame } from "@/providers/GameContext";
 
