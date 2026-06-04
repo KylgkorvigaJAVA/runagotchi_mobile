@@ -1,4 +1,6 @@
+import { useEffect, useRef } from "react";
 import { StyleSheet, View } from "react-native";
+import MapView, { Polyline } from "react-native-maps";
 
 import { useActivity } from "../../providers/ActivityContext";
 import { AppText } from "../AppText";
@@ -14,10 +16,40 @@ export default function FinishedInfo() {
   const distanceMeters = latestFinishedActivity?.distanceMeters ?? 0;
   const averageSpeedKmh = latestFinishedActivity?.averageSpeedKmh ?? 0;
 
+  const route =
+    latestFinishedActivity?.route.map((point) => ({
+      latitude: point.latitude,
+      longitude: point.longitude,
+    })) ?? [];
+
+  const mapRef = useRef<MapView>(null);
+
+  useEffect(() => {
+    if (route.length > 1) {
+      mapRef.current?.fitToCoordinates(route, {
+        edgePadding: {
+          top: 30,
+          right: 30,
+          bottom: 30,
+          left: 30,
+        },
+        animated: false,
+      });
+    }
+  }, [route]);
+
   return (
     <View style={styles.container}>
       
-      <View style={styles.mapPlaceholder} />
+      <MapView style={styles.map} ref={mapRef}>
+        {route.length > 1 && (
+          <Polyline
+            coordinates={route}
+            strokeWidth={4}
+            strokeColor="#FF3B30"
+          />
+        )}
+      </MapView>
 
       <AppText style={styles.info}>
         Distance: {(distanceMeters / 1000).toFixed(2)} km
@@ -46,6 +78,11 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     gap: 12,
     zIndex: 10,
+  },
+  map: {
+    width: 348,
+    height: 200,
+    borderRadius: 16,
   },
   mapPlaceholder: {
     width: 348,

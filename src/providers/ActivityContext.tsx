@@ -15,18 +15,17 @@ import {
 type GpsPoint = {
   latitude: number;
   longitude: number;
+  timestamp: number;
 };
-
 
 type ActivityRecord = {
   id: string;
   startedAt: string;
   elapsedTime: number;
-
   distanceMeters: number;
   averageSpeedKmh: number;
+  route: GpsPoint[];
 };
-
 
 type ActivityContextType = {
   elapsedTime: number;
@@ -65,15 +64,13 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
   const pauseAccumulatedRef = useRef(0);
 
   const previousLocationRef = useRef<GpsPoint | null>(null);
+  const routeRef = useRef<GpsPoint[]>([]);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const locationForegroundSubscriptionRef = useRef<Location.LocationSubscription | null>(null);
 
   // AVG SPEED derived
-  const averageSpeedKmh =
-  elapsedTime > 0
-    ? (distanceMeters * 3600) / (elapsedTime * 1000)
-    : 0;
+  const averageSpeedKmh = elapsedTime > 0 ? (distanceMeters * 3600) / (elapsedTime * 1000) : 0;
 
   // TIMER
   const calculateElapsed = () => {
@@ -81,7 +78,6 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
 
     const now = Date.now();
     const pausedTime = pauseAccumulatedRef.current;
-
     const currentPause = pausedAtRef.current ? now - pausedAtRef.current : 0;
 
     return Math.floor((now - startedAtRef.current - pausedTime - currentPause) / 1000);
@@ -103,83 +99,151 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
   };
 
   // GPS
-  const startLocationTracking = async () => {
-    const fg = await Location.requestForegroundPermissionsAsync();
+  const requestForegroundPermission = async (): Promise<boolean> => {
+      const fg = await Location.requestForegroundPermissionsAsync();
+
+      if (fg.status !== "granted") {
+        console.warn("Foreground location permission denied");
+        return false;
+      }
+
+      return true;
+    };
+
+  const requestBackgroundPermission = async (): Promise<boolean> => {
     const bg = await Location.requestBackgroundPermissionsAsync();
 
-    if (fg.status !== "granted" || bg.status !== "granted") return;
+    if (bg.status !== "granted") {
+      return false;
+    }
 
-    // FOREGROUND TRACKING
-    locationForegroundSubscriptionRef.current = await Location.watchPositionAsync(
-      {
-        accuracy: Location.Accuracy.BestForNavigation,
-        distanceInterval: 5,
-        timeInterval: 2000,
-      },
-      (location) => {
-        const point: GpsPoint = {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        };
+    return true;
+  };
 
-        const speedMps = Math.max(0, location.coords.speed ?? 0);
-        const kmh = Math.max(0, speedMps * 3.6);
-        setCurrentSpeedKmh((prev) => prev * 0.7 + kmh * 0.3);
+  const startLocationTracking = async () => {
+    const fgGranted = await requestForegroundPermission();
+    if (!fgGranted) return;
 
-        if (previousLocationRef.current) {
+    await stopLocationTracking();
+
+    locationForegroundSubscriptionRef.current =
+      await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.BestForNavigation,
+          distanceInterval: 5,
+          timeInterval: 2000,
+        },
+        (location) => {
+          const point: GpsPoint = {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            timestamp: location.timestamp,
+          };
+
+          const speedMps = Math.max(0, location.coords.speed ?? 0);
+          const kmh = speedMps * 3.6;
+
+          setCurrentSpeedKmh((prev) => prev === 0 ? kmh : prev * 0.7 + kmh * 0.3);
+
+          if (!previousLocationRef.current) {
+            routeRef.current.push(point);
+            previousLocationRef.current = point;
+            return;
+          }
+
           const dist = getDistance(previousLocationRef.current, point);
 
-          if (dist > 3 && dist < 50) {
-            setDistanceMeters((p) => p + dist);
+          if (dist > 3 && dist < 100) {
+            routeRef.current.push(point);
+            setDistanceMeters((prevDistance) => prevDistance + dist);
           }
+
+          previousLocationRef.current = point;
         }
+      );
 
-        previousLocationRef.current = point;
+    const bgGranted = await requestBackgroundPermission();
+
+    if (bgGranted) {
+      const alreadyRunning =
+        await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+
+      if (!alreadyRunning) {
+        await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
+          accuracy: Location.Accuracy.BestForNavigation,
+          distanceInterval: 5,
+          timeInterval: 2000,
+          foregroundService: {
+            notificationTitle: "Run tracking active",
+            notificationBody: "Runagotchi is tracking your activity",
+          },
+          pausesUpdatesAutomatically: false,
+        });
       }
-    );
+    }
+  };
 
-    // BACKGROUND TRACKING
-    await Location.startLocationUpdatesAsync(LOCATION_TASK_NAME, {
-      accuracy: Location.Accuracy.BestForNavigation,
-      distanceInterval: 5,
-      timeInterval: 2000,
-      foregroundService: {
-        notificationTitle: "Run tracking active",
-        notificationBody: "Runagotchi is tracking your activity",
-      },
-      pausesUpdatesAutomatically: false,
-    });
+  const loadBackgroundRoute = async (): Promise<GpsPoint[]> => {
+    try {
+      const stored = await AsyncStorage.getItem("activity_locations");
+
+      if (!stored) return [];
+
+      const parsed = JSON.parse(stored);
+
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
   };
 
   const stopLocationTracking = async () => {
     locationForegroundSubscriptionRef.current?.remove();
     locationForegroundSubscriptionRef.current = null;
 
-    const hasTask = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
-    if (hasTask) {
-      await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
-    }
+    const backgroundRunning = await Location.hasStartedLocationUpdatesAsync(LOCATION_TASK_NAME);
+
+    if (backgroundRunning) await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
   };
 
   // STORAGE
   const saveActivityToStorage = async (record: ActivityRecord) => {
-    const existing = await AsyncStorage.getItem("activities");
-    const parsed: ActivityRecord[] = existing ? JSON.parse(existing) : [];
+    try {
+      const existing = await AsyncStorage.getItem("activities");
 
-    parsed.push(record);
+      let parsed: ActivityRecord[] = [];
 
-    await AsyncStorage.setItem("activities", JSON.stringify(parsed));
+      if (existing) {
+        try {
+          parsed = JSON.parse(existing);
+        } catch {
+          parsed = [];
+        }
+      }
+
+      parsed.push(record);
+
+      await AsyncStorage.setItem("activities", JSON.stringify(parsed));
+    } catch (error) {
+      console.error("Failed to save activity", error);
+    }
   };
 
 
   // ACTIVITY ACTIONS
   const startActivity = async () => {
+    if (startedAtRef.current !== null) return;
+
+    const fgGranted = await requestForegroundPermission();
+    if (!fgGranted) return;
+
     const now = Date.now();
 
     startedAtRef.current = now;
     pausedAtRef.current = null;
     pauseAccumulatedRef.current = 0;
 
+    routeRef.current = [];
     previousLocationRef.current = null;
 
     setDistanceMeters(0);
@@ -189,6 +253,7 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
     setIsPaused(false);
     setElapsedTime(0);
 
+    await AsyncStorage.removeItem("activity_locations");
     startUITimer();
     await startLocationTracking();
   };
@@ -211,8 +276,13 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
   const resumeActivity = async () => {
     if (!pausedAtRef.current) return;
 
+    const fgGranted = await requestForegroundPermission();
+    if (!fgGranted) return;
+
     pauseAccumulatedRef.current += Date.now() - pausedAtRef.current;
     pausedAtRef.current = null;
+
+    previousLocationRef.current = previousLocationRef.current = null;
 
     setIsPaused(false);
     setIsRunning(true);
@@ -224,9 +294,19 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
 
   const finishActivity = async () => {
     stopUITimer();
-    stopLocationTracking();
+    await stopLocationTracking();
 
     if (!startedAtRef.current) return;
+
+    const backgroundRoute = await loadBackgroundRoute();
+    const unique = new Map<string, GpsPoint>();
+
+    [...routeRef.current, ...backgroundRoute].forEach((point) => {
+      const key = `${point.latitude}:${point.longitude}:${point.timestamp}`;
+      unique.set(key, point);
+    });
+
+    const route = [...unique.values()].sort((a, b) => a.timestamp - b.timestamp);
 
     const record: ActivityRecord = {
       id: Date.now().toString(),
@@ -234,6 +314,7 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
       elapsedTime,
       distanceMeters,
       averageSpeedKmh,
+      route,
     };
 
     setLatestFinishedActivity(record);
@@ -250,6 +331,8 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
     pauseAccumulatedRef.current = 0;
 
     previousLocationRef.current = null;
+    routeRef.current = [];
+    await AsyncStorage.removeItem("activity_locations");
 
     await saveActivityToStorage(record);
   };
@@ -258,7 +341,7 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
   useEffect(() => {
     return () => {
       stopUITimer();
-      stopLocationTracking();
+      void stopLocationTracking();
     };
   }, []);
 
