@@ -10,7 +10,7 @@ const weatherImages: Record<WeatherType, ImageSourcePropType> = {
   sunny: require("@/assets/images/bg/bg_sunny_day.png"),
   rainy: require("@/assets/images/bg/bg_rainy_day.png"),
   cloudy: require("@/assets/images/bg/bg_cloudy_day.png"),
-  night_cloudy: require("@/assets/images/bg/bg_cloudy_night.png"),
+  partly_cloudy: require("@/assets/images/bg/bg_partly_cloudy_day.png"),
   night_clear: require("@/assets/images/bg/bg_clear_night.png"),
   night_rainy: require("@/assets/images/bg/bg_rainy_night.png"),
 };

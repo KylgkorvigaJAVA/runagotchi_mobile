@@ -8,11 +8,13 @@ import { Animated, Dimensions, Image, PanResponder, Pressable, StyleSheet, Text,
 
 const EDGE_GAP = 25;
 const PANEL_WIDTH = Math.max(0, Dimensions.get("window").width - EDGE_GAP);
+// DEBUG: Development-only weather presets used by the in-app debugger.
+// Remove this constant and all usages when removing the weather debug UI.
 const TEST_WEATHERS: WeatherType[] = [
   "sunny",
   "rainy",
   "cloudy",
-  "night_cloudy",
+  "partly_cloudy",
   "night_clear",
   "night_rainy",
 ];
@@ -89,6 +91,9 @@ export default function Index() {
   return (
     <View style={{ flex: 1 }}>
       <WeatherBackground weather={activeWeather} />
+      {/* DEBUG: Development-only weather debug panel. */}
+      {/* To remove: delete this entire block (the `__DEV__` conditional), the styles
+          prefixed with `debug*`, and the `TEST_WEATHERS` constant above. */}
       {__DEV__ && (
         <View style={styles.debugBox} pointerEvents="box-none">
           <View style={styles.debugPanel}>
