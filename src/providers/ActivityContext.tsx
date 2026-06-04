@@ -11,6 +11,8 @@ import {
   useState,
 } from "react";
 
+import { saveActivity } from '@/features/profile/storage';
+
 
 type GpsPoint = {
   latitude: number;
@@ -206,29 +208,6 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
     if (backgroundRunning) await Location.stopLocationUpdatesAsync(LOCATION_TASK_NAME);
   };
 
-  // STORAGE
-  const saveActivityToStorage = async (record: ActivityRecord) => {
-    try {
-      const existing = await AsyncStorage.getItem("activities");
-
-      let parsed: ActivityRecord[] = [];
-
-      if (existing) {
-        try {
-          parsed = JSON.parse(existing);
-        } catch {
-          parsed = [];
-        }
-      }
-
-      parsed.push(record);
-
-      await AsyncStorage.setItem("activities", JSON.stringify(parsed));
-    } catch (error) {
-      console.error("Failed to save activity", error);
-    }
-  };
-
 
   // ACTIVITY ACTIONS
   const startActivity = async () => {
@@ -334,7 +313,7 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
     routeRef.current = [];
     await AsyncStorage.removeItem("activity_locations");
 
-    await saveActivityToStorage(record);
+    await saveActivity(record);
   };
 
   // cleanup on app reload/unmount

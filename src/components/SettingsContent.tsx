@@ -1,8 +1,9 @@
-import { APP_FONT_FAMILY, AppText } from "@/components/AppText";
-import { clearPetProfile, savePetName } from "@/features/profile/storage";
-import { useGame } from "@/providers/GameContext";
 import { useState } from "react";
 import { Image, Pressable, StyleSheet, TextInput, View } from "react-native";
+
+import { APP_FONT_FAMILY, AppText } from "@/components/AppText";
+import { clearActivities, clearPetProfile, savePetName } from "@/features/profile/storage";
+import { useGame } from "@/providers/GameContext";
 
 type SettingsContentProps = {
   onClose: () => void;
@@ -28,6 +29,7 @@ export default function SettingsContent({ onClose }: SettingsContentProps) {
   const handleClearProfile = async () => {
     setPetName("");
     await clearPetProfile();
+    await clearActivities()
     onClose();
   };
 
