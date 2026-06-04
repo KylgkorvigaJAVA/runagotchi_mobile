@@ -1,10 +1,12 @@
+import { useRef, useState } from "react";
+import { Animated, Dimensions, Image, PanResponder, Pressable, StyleSheet, Text, View } from "react-native";
+
+import ActivityHistory from "@/components/ActivityHistory";
 import BottomNavigation from "@/components/BottomNavigation";
 import MainContent from "@/components/MainContent";
 import WeatherBackground from "@/components/WeatherBackground";
 import type { WeatherType } from "@/lib/weather";
 import { useWeather } from "@/providers/WeatherContext";
-import { useRef, useState } from "react";
-import { Animated, Dimensions, Image, PanResponder, Pressable, StyleSheet, Text, View } from "react-native";
 
 const EDGE_GAP = 25;
 const PANEL_WIDTH = Math.max(0, Dimensions.get("window").width - EDGE_GAP);
@@ -140,11 +142,15 @@ export default function Index() {
       {(isStatsOpen || isShopOpen) && <Pressable style={styles.backdrop} onPress={() => (isStatsOpen ? closeStats() : closeShop())} />}
 
       {isStatsOpen && (
-        <Animated.View style={[styles.leftPanel, { transform: [{ translateX: statsX }] }]} {...statsPan.panHandlers}>
+        <Animated.View style={[styles.leftPanel, { transform: [{ translateX: statsX }] },]} {...statsPan.panHandlers}>
           <View style={[styles.swipeEdge, styles.swipeEdgeRight]} />
           <Pressable style={styles.closeButton} onPress={closeStats}>
-            <Image source={require("@/assets/images/btn/close_btn.png")} style={styles.closeImage} />
+            <Image
+              source={require("@/assets/images/btn/close_btn.png")}
+              style={styles.closeImage}
+            />
           </Pressable>
+          <ActivityHistory />
         </Animated.View>
       )}
 
