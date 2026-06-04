@@ -20,7 +20,7 @@ export function resolveWeatherType(
 
   // Partly cloudy
   if (weatherCode === 2) {
-    return isDay ? "partly_cloudy" : "night_partly_cloudy";
+    return isDay ? "partly_cloudy" : "night_clear";
   }
 
   // Mainly clear -> treat as sunny
@@ -29,7 +29,7 @@ export function resolveWeatherType(
   }
   // Overcast / cloud groups
   if ([3, 45, 48].includes(weatherCode)) {
-    return isDay ? "cloudy" : "night_partly_cloudy";
+    return isDay ? "cloudy" : "night_clear";
   }
 
   if ([51, 53, 55, 56, 57, 61, 63, 65, 80, 81, 82, 95, 96, 99].includes(weatherCode)) {
@@ -37,7 +37,7 @@ export function resolveWeatherType(
   }
 
   if ([71, 73, 75, 77, 85, 86].includes(weatherCode)) {
-    return isDay ? "cloudy" : "night_partly_cloudy";
+    return isDay ? "cloudy" : "night_clear";
   }
 
   return isDay ? "sunny" : "night_clear";
