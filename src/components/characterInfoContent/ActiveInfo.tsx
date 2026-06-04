@@ -6,7 +6,7 @@ import { AppText } from "../AppText";
 
 export default function ActiveInfo() {
   const { screenState } = useGame();
-  const { elapsedTime } = useActivity();
+  const { elapsedTime, distanceMeters, averageSpeedKmh, currentSpeedKmh } = useActivity();
 
   const hours = Math.floor(elapsedTime / 3600);
   const minutes = Math.floor((elapsedTime % 3600) / 60);
@@ -16,11 +16,14 @@ export default function ActiveInfo() {
     <View style={styles.container}>
       
       <AppText style={styles.info}>
-        Distance: 67km
+        Distance: {(distanceMeters / 1000).toFixed(2)} km
       </AppText>
 
       <AppText style={styles.info}>
-        Avg speed: 67km/h
+        {screenState === "paused"
+          ? `Average speed: ${averageSpeedKmh.toFixed(1)} km/h`
+          : `Current speed: ${currentSpeedKmh.toFixed(1)} km/h`
+        }
       </AppText>
 
       <AppText style={styles.info}>
@@ -30,7 +33,9 @@ export default function ActiveInfo() {
       <AppText style={styles.activity}>
         {screenState === "paused"
           ? "PAUSED"
-          : "WALKING"}
+          : currentSpeedKmh >= 6
+            ? "RUNNING"
+            : "WALKING"}
       </AppText>
 
     </View>
