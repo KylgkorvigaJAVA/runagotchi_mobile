@@ -1,7 +1,7 @@
-import { MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { BackHandler, Pressable, StyleSheet, View } from 'react-native';
-import { AppText } from "./AppText";
+import { AppText } from './AppText';
 
 type MenuOptionsProps = {
     closeMenu: (afterClose?: () => void) => void;
@@ -27,11 +27,11 @@ export default function MenuOptions({ closeMenu, openSettings }: MenuOptionsProp
                     <AppText style={styles.actionText}>SETTINGS</AppText>
                 </Pressable>
                 <Pressable
-                    style={styles.quitButton}
-                    onPress={() => BackHandler.exitApp()}>
-                    <Image
-                        source={require("@/assets/images/btn/quit_btn.png")}
-                        style={styles.quitImage} />
+                    style={styles.actionButton}
+                    onPress={() => BackHandler.exitApp()}
+                >
+                    <MaterialIcons name="exit-to-app" size={40} color="#fff" style={styles.actionIcon} />
+                    <AppText style={styles.actionText}>QUIT</AppText>
                 </Pressable>
 
             </View>
@@ -95,8 +95,9 @@ const styles = StyleSheet.create({
         width: 56,
         height: 56,
     },
-    quitImage: {
-        width: 100,
-        height: 50,
+    
+    clearProfileText: {
+        fontSize: 20,
+        color: "#2f3f2e",
     },
 });
