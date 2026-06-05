@@ -1,3 +1,4 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRef, useState } from "react";
 import { Animated, Dimensions, Image, PanResponder, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -26,8 +27,10 @@ export default function Index() {
   const [weatherOverride, setWeatherOverride] = useState<WeatherType | null>(null);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isShopOpen, setIsShopOpen] = useState(false);
+  const [isWeatherDebugOpen, setIsWeatherDebugOpen] = useState(false);
   const statsX = useRef(new Animated.Value(-PANEL_WIDTH)).current;
   const shopX = useRef(new Animated.Value(PANEL_WIDTH)).current;
+  const weatherDebugX = useRef(new Animated.Value(-PANEL_WIDTH)).current;
   const activeWeather = weatherOverride ?? weather;
 
   const openStats = () => {
@@ -52,6 +55,15 @@ export default function Index() {
 
   const closeShop = () => {
     Animated.timing(shopX, { toValue: PANEL_WIDTH, duration: 180, useNativeDriver: true }).start(() => setIsShopOpen(false));
+  };
+
+  const openWeatherDebug = () => {
+    setIsWeatherDebugOpen(true);
+    Animated.timing(weatherDebugX, { toValue: 0, duration: 220, useNativeDriver: true }).start();
+  };
+
+  const closeWeatherDebug = () => {
+    Animated.timing(weatherDebugX, { toValue: -PANEL_WIDTH, duration: 180, useNativeDriver: true }).start(() => setIsWeatherDebugOpen(false));
   };
 
   const statsPan = useRef(
@@ -90,15 +102,39 @@ export default function Index() {
     })
   ).current;
 
+  const weatherDebugPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderMove: (_, g) => {
+        if (g.dx < 0) {
+          weatherDebugX.setValue(Math.max(-PANEL_WIDTH, g.dx));
+        }
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dx < -PANEL_WIDTH * 0.25) {
+          closeWeatherDebug();
+          return;
+        }
+        Animated.spring(weatherDebugX, { toValue: 0, useNativeDriver: true }).start();
+      },
+    })
+  ).current;
+
   return (
     <View style={{ flex: 1 }}>
       <WeatherBackground weather={activeWeather} />
       {/* DEBUG: Development-only weather debug panel. */}
       {/* To remove: delete this entire block (the `__DEV__` conditional), the styles
           prefixed with `debug*`, and the `TEST_WEATHERS` constant above. */}
-      {__DEV__ && (
-        <View style={styles.debugBox} pointerEvents="box-none">
+      {__DEV__ && !isWeatherDebugOpen && (
+        <Pressable style={styles.debugLauncher} onPress={openWeatherDebug} hitSlop={10}>
+          <MaterialCommunityIcons name="umbrella" size={20} color="#fff" />
+        </Pressable>
+      )}
+      {__DEV__ && isWeatherDebugOpen && (
+        <Animated.View style={[styles.debugBox, { transform: [{ translateX: weatherDebugX }] }]} {...weatherDebugPan.panHandlers}>
           <View style={styles.debugPanel}>
+            <View style={[styles.swipeEdge, styles.debugSwipeEdge]} />
             <Pressable style={styles.debugButton} onPress={() => void refreshWeather()}>
               <Text style={styles.debugText}>{isLoading ? "Refreshing..." : `Live: ${weather}`}</Text>
             </Pressable>
@@ -133,7 +169,7 @@ export default function Index() {
             </View>
           </View>
           {error ? <Text style={styles.debugError}>{error}</Text> : null}
-        </View>
+        </Animated.View>
       )}
       
       <MainContent />
@@ -244,6 +280,22 @@ const styles = StyleSheet.create({
     zIndex: 30,
     alignItems: "flex-start",
   },
+  debugLauncher: {
+    position: "absolute",
+    top: 160,
+    left: 0,
+    zIndex: 30,
+    width: 28,
+    height: 28,
+    borderTopRightRadius: 10,
+    borderBottomRightRadius: 10,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    borderWidth: 1,
+    borderLeftWidth: 0,
+    borderColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
   debugPanel: {
     backgroundColor: "rgba(0,0,0,0.45)",
     borderTopRightRadius: 12,
@@ -255,6 +307,9 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     gap: 6,
     width: 132,
+  },
+  debugSwipeEdge: {
+    right: 4,
   },
   debugButton: {
     backgroundColor: "rgba(0,0,0,0.4)",
