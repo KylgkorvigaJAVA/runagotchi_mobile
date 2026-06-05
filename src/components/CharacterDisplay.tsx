@@ -35,11 +35,11 @@ export default function CharacterDisplay() {
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <AppText style={styles.statIcon}>⚡</AppText>
-          <AppText style={styles.statValue}>{energy}</AppText>
+          <AppText style={styles.statValue}>{Math.round(energy)}</AppText>
         </View>
         <View style={styles.statItem}>
           <AppText style={styles.statIcon}>❤️</AppText>
-          <AppText style={styles.statValue}>{health}</AppText>
+          <AppText style={styles.statValue}>{Math.round(health)}</AppText>
         </View>
       </View>
     </View>

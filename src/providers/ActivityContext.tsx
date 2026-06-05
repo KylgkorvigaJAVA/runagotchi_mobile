@@ -12,6 +12,7 @@ import {
 } from "react";
 
 import { saveActivity } from '@/features/profile/storage';
+import { useGame } from "@/providers/GameContext";
 
 
 type GpsPoint = {
@@ -50,6 +51,8 @@ const ActivityContext = createContext<ActivityContextType | null>(null);
 
 
 export function ActivityProvider({ children, }: PropsWithChildren) {
+  const { rewardHealthFromActivity, restoreEnergy } = useGame();
+
   // STATES
   const [elapsedTime, setElapsedTime] = useState(0);
   const [distanceMeters, setDistanceMeters] = useState(0);
@@ -295,6 +298,9 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
       averageSpeedKmh,
       route,
     };
+
+    await restoreEnergy();
+    await rewardHealthFromActivity(distanceMeters, averageSpeedKmh);
 
     setLatestFinishedActivity(record);
 
