@@ -69,6 +69,7 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
   const pauseAccumulatedRef = useRef(0);
 
   const previousLocationRef = useRef<GpsPoint | null>(null);
+  const recentPointsRef = useRef<GpsPoint[]>([]);
   const routeRef = useRef<GpsPoint[]>([]);
 
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -145,10 +146,30 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
             timestamp: location.timestamp,
           };
 
-          const speedMps = Math.max(0, location.coords.speed ?? 0);
-          const kmh = speedMps * 3.6;
+          recentPointsRef.current.push(point);
+          // keep last 8 sec data
+          recentPointsRef.current = recentPointsRef.current.filter(p => point.timestamp - p.timestamp <= 8000);
 
-          setCurrentSpeedKmh((prev) => prev === 0 ? kmh : prev * 0.7 + kmh * 0.3);
+          if (recentPointsRef.current.length >= 2) {
+            const first = recentPointsRef.current[0];
+            const last = recentPointsRef.current[recentPointsRef.current.length - 1];
+
+            let totalDistance = 0;
+
+            for (let i = 1; i < recentPointsRef.current.length; i++) {
+              totalDistance += getDistance(
+                recentPointsRef.current[i - 1],
+                recentPointsRef.current[i]
+              );
+            }
+
+            const seconds = (last.timestamp - first.timestamp) / 1000;
+
+            if (seconds > 0) {
+              const kmh = (totalDistance / seconds) * 3.6;
+              setCurrentSpeedKmh(prev => prev === 0 ? kmh : prev * 0.3 + kmh * 0.7);
+            }
+          }
 
           if (!previousLocationRef.current) {
             routeRef.current.push(point);
@@ -226,6 +247,7 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
     pauseAccumulatedRef.current = 0;
 
     routeRef.current = [];
+    recentPointsRef.current = [];
     previousLocationRef.current = null;
 
     setDistanceMeters(0);
@@ -264,7 +286,8 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
     pauseAccumulatedRef.current += Date.now() - pausedAtRef.current;
     pausedAtRef.current = null;
 
-    previousLocationRef.current = previousLocationRef.current = null;
+    recentPointsRef.current = [];
+    previousLocationRef.current = null;
 
     setIsPaused(false);
     setIsRunning(true);
