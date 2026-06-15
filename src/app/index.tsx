@@ -39,44 +39,37 @@ export default function Index() {
     Animated.timing(shopX, { toValue: PANEL_WIDTH, duration: 180, useNativeDriver: true }).start(() => setIsShopOpen(false));
   };
 
-  const statsPan = useRef(
-    PanResponder.create({
+  const createHorizontalPanResponder = (
+    animatedValue: Animated.Value,
+    onClose: () => void,
+    direction: 'left' | 'right'
+  ) => {
+    return PanResponder.create({
       onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy),
       onPanResponderMove: (_, g) => {
-        if (g.dx < 0) {
-          statsX.setValue(Math.max(-PANEL_WIDTH, g.dx));
+        if (direction === 'left' && g.dx < 0) {
+          animatedValue.setValue(Math.max(-PANEL_WIDTH, g.dx));
+        } else if (direction === 'right' && g.dx > 0) {
+          animatedValue.setValue(Math.min(PANEL_WIDTH, g.dx));
         }
       },
       onPanResponderRelease: (_, g) => {
-        if (g.dx < -PANEL_WIDTH * 0.25) {
-          closeStats();
+        const threshold = direction === 'left' ? -PANEL_WIDTH * 0.25 : PANEL_WIDTH * 0.25;
+        const shouldClose = direction === 'left' ? g.dx < threshold : g.dx > threshold;
+        if (shouldClose) {
+          onClose();
           return;
         }
-        Animated.spring(statsX, { toValue: 0, useNativeDriver: true }).start();
+        Animated.spring(animatedValue, { toValue: 0, useNativeDriver: true }).start();
       },
-    })
-  ).current;
+    });
+  };
 
-  const shopPan = useRef(
-    PanResponder.create({
-      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy),
-      onPanResponderMove: (_, g) => {
-        if (g.dx > 0) {
-          shopX.setValue(Math.min(PANEL_WIDTH, g.dx));
-        }
-      },
-      onPanResponderRelease: (_, g) => {
-        if (g.dx > PANEL_WIDTH * 0.25) {
-          closeShop();
-          return;
-        }
-        Animated.spring(shopX, { toValue: 0, useNativeDriver: true }).start();
-      },
-    })
-  ).current;
+  const statsPan = useRef(createHorizontalPanResponder(statsX, closeStats, 'left')).current;
+  const shopPan = useRef(createHorizontalPanResponder(shopX, closeShop, 'right')).current;
 
   return (
-    <View testID="home-screen" style={{ flex: 1 }}>
+    <View style={styles.container}>
       <WeatherBackground weather={weather} />
       
       <MainContent />
@@ -120,6 +113,10 @@ export default function Index() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#7FA37C",
+  },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.25)",
@@ -131,7 +128,11 @@ const styles = StyleSheet.create({
     right: EDGE_GAP,
     top: EDGE_GAP,
     bottom: EDGE_GAP,
-    backgroundColor: "#f4ead5",
+    backgroundColor: "#7FA37C",
+    borderRightWidth: 5,
+    borderTopWidth: 5,
+    borderBottomWidth: 5,
+    borderColor: "#486346",
     zIndex: 20,
     borderRadius: 16,
     paddingTop: 24,
@@ -143,7 +144,11 @@ const styles = StyleSheet.create({
     left: EDGE_GAP,
     top: EDGE_GAP,
     bottom: EDGE_GAP,
-    backgroundColor: "#f4ead5",
+    backgroundColor: "#7FA37C",
+    borderLeftWidth: 5,
+    borderTopWidth: 5,
+    borderBottomWidth: 5,
+    borderColor: "#486346",
     zIndex: 20,
     borderRadius: 16,
     paddingTop: 24,

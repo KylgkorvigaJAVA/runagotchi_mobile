@@ -1,40 +1,14 @@
-import { StyleSheet, View } from "react-native";
-import { AppText } from "./AppText";
-
-import { useGame } from "./GameContext";
+import { screenConfig } from "@/config/ScreenConfig";
+import { useGame } from "../providers/GameContext";
+import ActiveInfo from "./characterInfoContent/ActiveInfo";
+import FinishedInfo from "./characterInfoContent/FinishedInfo";
+import IdleInfo from "./characterInfoContent/IdleInfo";
 
 export default function CharacterInfo() {
-  const { petName } = useGame();
+  const { screenState } = useGame();
+  const config = screenConfig[screenState];
 
-  return (
-    <View style={styles.container}>
-      <AppText style={styles.name}>{ petName }</AppText>
-      <AppText style={styles.status}>Ready for a walk!</AppText>
-    </View>
-  );
+  if (config.text === "active") { return <ActiveInfo /> }
+  if (config.text === "finished") { return <FinishedInfo /> }
+  return <IdleInfo />
 }
-
-const styles = StyleSheet.create({
-  container: {
-    top: 100,
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    gap: 12,
-  },
-  name: {
-    fontSize: 45,
-    textShadowColor: "rgba(0, 0, 0, 0.8)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-    color: "#fff",
-  },
-  status: {
-    fontSize: 20,
-    textShadowColor: "rgba(0, 0, 0, 0.8)",
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
-    color: "#fff",
-  },
-
-});

@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { Image, Pressable, StyleSheet, View } from "react-native";
+
+import { screenConfig } from "@/config/ScreenConfig";
+import { useGame } from "../providers/GameContext";
 import { AppText } from "./AppText";
 
 export default function CharacterDisplay() {
   const [showDogMessage, setShowDogMessage] = useState(false);
+
+  const { screenState, health, energy } = useGame();
+  const config = screenConfig[screenState];
 
   useEffect(() => {
     if (!showDogMessage) {
@@ -20,7 +26,7 @@ export default function CharacterDisplay() {
   return (
     <View style={styles.container}>
       <Pressable style={styles.characterContainer} onPress={() => setShowDogMessage(true)}>
-        <Image source={require("@/assets/images/dog/gif/dog_state_home.gif")} style={styles.character} />
+        <Image source={config.petImage} style={styles.character} />
         {showDogMessage && (
           <Image source={require("@/assets/images/dog/woof.png")} style={styles.dogMessage} />
         )}
@@ -29,11 +35,11 @@ export default function CharacterDisplay() {
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <AppText style={styles.statIcon}>⚡</AppText>
-          <AppText style={styles.statValue}>75</AppText>
+          <AppText style={styles.statValue}>{energy}</AppText>
         </View>
         <View style={styles.statItem}>
           <AppText style={styles.statIcon}>❤️</AppText>
-          <AppText style={styles.statValue}>90</AppText>
+          <AppText style={styles.statValue}>{health}</AppText>
         </View>
       </View>
     </View>
@@ -42,7 +48,7 @@ export default function CharacterDisplay() {
 
 const styles = StyleSheet.create({
   container: {
-    top: 130,
+    top: 180,
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
