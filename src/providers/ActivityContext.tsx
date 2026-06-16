@@ -147,8 +147,8 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
           };
 
           recentPointsRef.current.push(point);
-          // keep last 8 sec data
-          recentPointsRef.current = recentPointsRef.current.filter(p => point.timestamp - p.timestamp <= 8000);
+          // keep last 7 sec data
+          recentPointsRef.current = recentPointsRef.current.filter(p => point.timestamp - p.timestamp <= 7000);
 
           if (recentPointsRef.current.length >= 2) {
             const first = recentPointsRef.current[0];
@@ -157,10 +157,13 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
             let totalDistance = 0;
 
             for (let i = 1; i < recentPointsRef.current.length; i++) {
-              totalDistance += getDistance(
+              const segmentDistance = getDistance(
                 recentPointsRef.current[i - 1],
                 recentPointsRef.current[i]
               );
+              if (segmentDistance > 7 && segmentDistance < 100) {
+                totalDistance += segmentDistance;
+              }
             }
 
             const seconds = (last.timestamp - first.timestamp) / 1000;
@@ -179,7 +182,7 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
 
           const dist = getDistance(previousLocationRef.current, point);
 
-          if (dist > 3 && dist < 100) {
+          if (dist > 7 && dist < 100) {
             routeRef.current.push(point);
             setDistanceMeters((prevDistance) => prevDistance + dist);
           }
@@ -303,6 +306,12 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
 
     if (!startedAtRef.current) return;
 
+    const finalElapsed = calculateElapsed();
+    const finalAverageSpeed =
+    finalElapsed > 0
+      ? (distanceMeters * 3600) / (finalElapsed * 1000)
+      : 0;
+
     const backgroundRoute = await loadBackgroundRoute();
     const unique = new Map<string, GpsPoint>();
 
@@ -316,14 +325,14 @@ export function ActivityProvider({ children, }: PropsWithChildren) {
     const record: ActivityRecord = {
       id: Date.now().toString(),
       startedAt: new Date(startedAtRef.current ?? Date.now()).toISOString(),
-      elapsedTime,
+      elapsedTime: finalElapsed,
       distanceMeters,
-      averageSpeedKmh,
+      averageSpeedKmh: finalAverageSpeed,
       route,
     };
 
     await restoreEnergy();
-    await rewardHealthFromActivity(distanceMeters, averageSpeedKmh);
+    await rewardHealthFromActivity(distanceMeters, finalAverageSpeed);
 
     setLatestFinishedActivity(record);
 
