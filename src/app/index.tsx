@@ -7,6 +7,7 @@ import MainContent from "@/components/MainContent";
 import WeatherBackground from "@/components/WeatherBackground";
 import type { WeatherType } from "@/lib/weather";
 import { useWeather } from "@/providers/WeatherContext";
+import { AppText } from "../components/AppText";
 
 const EDGE_GAP = 25;
 const PANEL_WIDTH = Math.max(0, Dimensions.get("window").width - EDGE_GAP);
@@ -143,6 +144,9 @@ export default function Index() {
 
       {isStatsOpen && (
         <Animated.View style={[styles.leftPanel, { transform: [{ translateX: statsX }] },]} {...statsPan.panHandlers}>
+          <View style={styles.statsPanelHeader}>
+            <AppText style={styles.panelTitle}>Stats</AppText>
+          </View>
           <View style={[styles.swipeEdge, styles.swipeEdgeRight]} />
           <Pressable style={styles.closeButton} onPress={closeStats}>
             <Image
@@ -156,6 +160,9 @@ export default function Index() {
 
       {isShopOpen && (
         <Animated.View style={[styles.rightPanel, { transform: [{ translateX: shopX }] }]} {...shopPan.panHandlers}>
+          <View style={styles.shopPanelHeader}>
+            <AppText style={styles.panelTitle}>Shop</AppText>
+          </View>
           <View style={[styles.swipeEdge, styles.swipeEdgeLeft]} />
           <Pressable style={[styles.closeButton, styles.closeButtonLeft]} onPress={closeShop}>
             <Image source={require("@/assets/images/btn/close_btn.png")} style={styles.closeImage} />
@@ -221,6 +228,25 @@ const styles = StyleSheet.create({
   closeImage: {
     width: 70,
     height: 70,
+  },
+  statsPanelHeader: {
+    paddingBottom: 12,
+    marginBottom: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  shopPanelHeader: {
+    paddingBottom: 12,
+    marginBottom: 16,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  panelTitle: {
+    color: "#fff",
+    fontSize: 24,
+    fontWeight: "700",
+    letterSpacing: 0.4,
+    textAlign: "center",
   },
   swipeEdge: {
     position: "absolute",

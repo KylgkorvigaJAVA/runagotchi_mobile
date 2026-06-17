@@ -19,12 +19,14 @@ export default function ActiveInfo() {
         Distance: {(distanceMeters / 1000).toFixed(2)} km
       </AppText>
 
+      {/*
       <AppText style={styles.info}>
         {screenState === "paused"
           ? `Average speed: ${averageSpeedKmh.toFixed(1)} km/h`
           : `Current speed: ${currentSpeedKmh.toFixed(1)} km/h`
         }
       </AppText>
+      */}
 
       <AppText style={styles.info}>
         Time: {hours}h {minutes}m {seconds}s
