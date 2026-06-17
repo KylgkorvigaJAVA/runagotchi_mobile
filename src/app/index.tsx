@@ -292,9 +292,10 @@ const styles = StyleSheet.create({
   },
   panelTitle: {
     color: "#fff",
-    fontSize: 24,
-    fontWeight: "700",
-    letterSpacing: 0.4,
+    fontSize: 32,
+    textShadowColor: "rgba(0, 0, 0, 0.8)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
     textAlign: "center",
   },
   swipeEdge: {

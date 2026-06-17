@@ -26,7 +26,7 @@ export default function ActivityHistory() {
           key={activity.id}
           style={styles.card}
         >
-          <AppText>
+          <AppText style={styles.text}>
             {new Date(activity.startedAt).toLocaleString([], {
               year: "numeric",
               month: "2-digit",
@@ -37,15 +37,15 @@ export default function ActivityHistory() {
             })}
           </AppText>
 
-          <AppText>
+          <AppText style={styles.text}>
             Distance: {(activity.distanceMeters / 1000).toFixed(2)} km
           </AppText>
 
-          <AppText>
+          <AppText style={styles.text}>
             Avg Speed: {activity.averageSpeedKmh.toFixed(1)} km/h
           </AppText>
 
-          <AppText>
+          <AppText style={styles.text}>
             Duration: {formatDuration(activity.elapsedTime)}
           </AppText>
         </View>
@@ -64,5 +64,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#5f7d5d",
     borderRadius: 12,
     padding: 12,
+  },
+  text: {
+    color: "#fff",
   },
 });
