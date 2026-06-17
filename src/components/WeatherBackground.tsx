@@ -1,4 +1,5 @@
-import { ImageBackground, ImageSourcePropType, StyleSheet } from "react-native";
+import { useEffect, useState } from "react";
+import { Image, ImageBackground, ImageSourcePropType, StyleSheet, View } from "react-native";
 
 import type { WeatherType } from "@/lib/weather";
 
@@ -28,17 +29,45 @@ function getWeatherImage(weather?: WeatherBackgroundProps["weather"]) {
 export default function WeatherBackground({
   weather = "sunny",
 }: WeatherBackgroundProps) {
+  const nextImage = getWeatherImage(weather);
+  const [displayedImage, setDisplayedImage] = useState(nextImage);
+  const [pendingImage, setPendingImage] = useState<ImageSourcePropType | null>(null);
+
+  useEffect(() => {
+    if (nextImage !== displayedImage) {
+      setPendingImage(nextImage);
+    }
+  }, [displayedImage, nextImage]);
+
   return (
-    <ImageBackground
-      source={getWeatherImage(weather)}
-      style={styles.container}
-      resizeMode="cover"
-    />
+    <View style={styles.container}>
+      <ImageBackground source={displayedImage} style={styles.container} resizeMode="cover" />
+      {pendingImage ? (
+        <Image
+          source={pendingImage}
+          style={styles.preload}
+          onLoadEnd={() => {
+            setDisplayedImage(pendingImage);
+            setPendingImage(null);
+          }}
+          onError={() => {
+            setDisplayedImage(pendingImage);
+            setPendingImage(null);
+          }}
+        />
+      ) : null}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
+  },
+  preload: {
+    height: 1,
+    opacity: 0,
+    position: "absolute",
+    width: 1,
   },
 });

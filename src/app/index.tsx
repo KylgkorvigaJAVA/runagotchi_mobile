@@ -11,6 +11,7 @@ import { AppText } from "../components/AppText";
 
 const EDGE_GAP = 25;
 const PANEL_WIDTH = Math.max(0, Dimensions.get("window").width - EDGE_GAP);
+const DEBUG_PANEL_WIDTH = 152;
 // DEBUG: Development-only weather presets used by the in-app debugger.
 // Remove this constant and all usages when removing the weather debug UI.
 const TEST_WEATHERS: WeatherType[] = [
@@ -27,8 +28,10 @@ export default function Index() {
   const [weatherOverride, setWeatherOverride] = useState<WeatherType | null>(null);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isShopOpen, setIsShopOpen] = useState(false);
+  const [isDebugOpen, setIsDebugOpen] = useState(true);
   const statsX = useRef(new Animated.Value(-PANEL_WIDTH)).current;
   const shopX = useRef(new Animated.Value(PANEL_WIDTH)).current;
+  const debugX = useRef(new Animated.Value(0)).current;
   const activeWeather = weatherOverride ?? weather;
 
   const openStats = () => {
@@ -53,6 +56,23 @@ export default function Index() {
 
   const closeShop = () => {
     Animated.timing(shopX, { toValue: PANEL_WIDTH, duration: 180, useNativeDriver: true }).start(() => setIsShopOpen(false));
+  };
+
+  const openDebug = () => {
+    setIsDebugOpen(true);
+    Animated.timing(debugX, { toValue: 0, duration: 220, useNativeDriver: true }).start();
+  };
+
+  const closeDebug = () => {
+    Animated.timing(debugX, { toValue: -DEBUG_PANEL_WIDTH, duration: 180, useNativeDriver: true }).start(() => setIsDebugOpen(false));
+  };
+
+  const toggleDebug = () => {
+    if (isDebugOpen) {
+      closeDebug();
+      return;
+    }
+    openDebug();
   };
 
   const statsPan = useRef(
@@ -91,6 +111,24 @@ export default function Index() {
     })
   ).current;
 
+  const debugPan = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dx) > 8 && Math.abs(g.dx) > Math.abs(g.dy),
+      onPanResponderMove: (_, g) => {
+        if (g.dx < 0) {
+          debugX.setValue(Math.max(-DEBUG_PANEL_WIDTH, g.dx));
+        }
+      },
+      onPanResponderRelease: (_, g) => {
+        if (g.dx < -DEBUG_PANEL_WIDTH * 0.2) {
+          closeDebug();
+          return;
+        }
+        Animated.spring(debugX, { toValue: 0, useNativeDriver: true }).start();
+      },
+    })
+  ).current;
+
   return (
     <View style={{ flex: 1 }}>
       <WeatherBackground weather={activeWeather} />
@@ -98,7 +136,11 @@ export default function Index() {
       {/* To remove: delete this entire block (the `__DEV__` conditional), the styles
           prefixed with `debug*`, and the `TEST_WEATHERS` constant above. */}
       {__DEV__ && (
-        <View style={styles.debugBox} pointerEvents="box-none">
+        <Animated.View
+          style={[styles.debugBox, { transform: [{ translateX: debugX }] }]}
+          pointerEvents="box-none"
+          {...(isDebugOpen ? debugPan.panHandlers : {})}
+        >
           <View style={styles.debugPanel}>
             <Pressable style={styles.debugButton} onPress={() => void refreshWeather()}>
               <Text style={styles.debugText}>{isLoading ? "Refreshing..." : `Live: ${weather}`}</Text>
@@ -132,9 +174,16 @@ export default function Index() {
                 );
               })}
             </View>
+            {error ? <Text style={styles.debugError}>{error}</Text> : null}
           </View>
-          {error ? <Text style={styles.debugError}>{error}</Text> : null}
-        </View>
+
+          <Pressable
+            style={[styles.debugToggle, isDebugOpen ? styles.debugToggleOpen : styles.debugToggleClosed]}
+            onPress={toggleDebug}
+          >
+            <Text style={styles.debugToggleIcon}>☂</Text>
+          </Pressable>
+        </Animated.View>
       )}
       
       <MainContent />
@@ -269,6 +318,7 @@ const styles = StyleSheet.create({
     left: 0,
     zIndex: 30,
     alignItems: "flex-start",
+    width: DEBUG_PANEL_WIDTH + 34,
   },
   debugPanel: {
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -280,7 +330,7 @@ const styles = StyleSheet.create({
     paddingLeft: 8,
     paddingRight: 10,
     gap: 6,
-    width: 132,
+    width: DEBUG_PANEL_WIDTH,
   },
   debugButton: {
     backgroundColor: "rgba(0,0,0,0.4)",
@@ -326,12 +376,36 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   debugError: {
-    marginTop: 6,
+    marginTop: 2,
     color: "#ffdddd",
     backgroundColor: "rgba(255,0,0,0.2)",
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 6,
     fontSize: 10,
+  },
+  debugToggle: {
+    position: "absolute",
+    top: 14,
+    right: 0,
+    width: 30,
+    height: 52,
+    borderTopRightRadius: 12,
+    borderBottomRightRadius: 12,
+    borderTopLeftRadius: 0,
+    borderBottomLeftRadius: 0,
+    backgroundColor: "rgba(0,0,0,0.45)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  debugToggleOpen: {
+    right: 4.2,
+  },
+  debugToggleClosed: {
+    right: 4.2,
+  },
+  debugToggleIcon: {
+    color: "#fff",
+    fontSize: 16,
   },
 });
