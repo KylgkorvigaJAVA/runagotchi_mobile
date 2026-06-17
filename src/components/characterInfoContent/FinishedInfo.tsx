@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { StyleSheet, View } from "react-native";
+import { Platform, StyleSheet, View } from "react-native";
 import MapView, { Polyline } from "react-native-maps";
 
 import { useActivity } from "../../providers/ActivityContext";
@@ -40,16 +40,20 @@ export default function FinishedInfo() {
 
   return (
     <View style={styles.container}>
-      
-      <MapView style={styles.map} ref={mapRef}>
-        {route.length > 1 && (
-          <Polyline
-            coordinates={route}
-            strokeWidth={4}
-            strokeColor="#FF3B30"
-          />
-        )}
-      </MapView>
+
+      {Platform.OS === "android" ? (
+        <View style={styles.mapPlaceholder} />
+      ) : (
+        <MapView style={styles.map} ref={mapRef}>
+          {route.length > 1 && (
+            <Polyline
+              coordinates={route}
+              strokeWidth={4}
+              strokeColor="#FF3B30"
+            />
+          )}
+        </MapView>
+      )}
 
       <AppText style={styles.info}>
         Distance: {(distanceMeters / 1000).toFixed(2)} km
